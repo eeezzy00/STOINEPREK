@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://bkgvufqny5mtt"]
+
+[ext_resource type="Shader" path="res://shaders/crt_overlay.gdshader" id="1_jxpnf"]
+
+[resource]
+shader = ExtResource("1_jxpnf")
+shader_parameter/line_intensity = 0.16
+shader_parameter/line_count = 320.0
+shader_parameter/vignette_strength = 0.55
+shader_parameter/flicker_speed = 7.0
+shader_parameter/flicker_amount = 0.025

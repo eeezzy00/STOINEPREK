@@ -1,0 +1,394 @@
+[gd_scene load_steps=59 format=3]
+
+[ext_resource type="Script" path="res://player.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Martial Hero/Sprites/Idle.png" id="idle_tex"]
+[ext_resource type="Texture2D" path="res://assets/Martial Hero/Sprites/Run.png" id="run_tex"]
+[ext_resource type="Texture2D" path="res://assets/Martial Hero/Sprites/Attack1.png" id="atk_tex"]
+[ext_resource type="Texture2D" path="res://assets/Martial Hero/Sprites/Attack2.png" id="atk2_tex"]
+[ext_resource type="Texture2D" path="res://assets/Martial Hero/Sprites/Death.png" id="death_tex"]
+[ext_resource type="Texture2D" path="res://assets/Martial Hero/Sprites/Fall.png" id="fall_tex"]
+[ext_resource type="Texture2D" path="res://assets/Martial Hero/Sprites/Jump.png" id="jump_tex"]
+[ext_resource type="Texture2D" path="res://assets/Martial Hero/Sprites/Take Hit.png" id="hurt_tex"]
+[ext_resource type="Texture2D" path="res://assets/Martial Hero/Sprites/Take Hit - white silhouette.png" id="hurtflash_tex"]
+
+[sub_resource type="AtlasTexture" id="idle_0"]
+atlas = ExtResource("idle_tex")
+region = Rect2(0, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="idle_1"]
+atlas = ExtResource("idle_tex")
+region = Rect2(200, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="idle_2"]
+atlas = ExtResource("idle_tex")
+region = Rect2(400, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="idle_3"]
+atlas = ExtResource("idle_tex")
+region = Rect2(600, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="idle_4"]
+atlas = ExtResource("idle_tex")
+region = Rect2(800, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="idle_5"]
+atlas = ExtResource("idle_tex")
+region = Rect2(1000, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="idle_6"]
+atlas = ExtResource("idle_tex")
+region = Rect2(1200, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="idle_7"]
+atlas = ExtResource("idle_tex")
+region = Rect2(1400, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_0"]
+atlas = ExtResource("run_tex")
+region = Rect2(0, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_1"]
+atlas = ExtResource("run_tex")
+region = Rect2(200, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_2"]
+atlas = ExtResource("run_tex")
+region = Rect2(400, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_3"]
+atlas = ExtResource("run_tex")
+region = Rect2(600, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_4"]
+atlas = ExtResource("run_tex")
+region = Rect2(800, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_5"]
+atlas = ExtResource("run_tex")
+region = Rect2(1000, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_6"]
+atlas = ExtResource("run_tex")
+region = Rect2(1200, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_7"]
+atlas = ExtResource("run_tex")
+region = Rect2(1400, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="atk_0"]
+atlas = ExtResource("atk_tex")
+region = Rect2(0, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="atk_1"]
+atlas = ExtResource("atk_tex")
+region = Rect2(200, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="atk_2"]
+atlas = ExtResource("atk_tex")
+region = Rect2(400, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="atk_3"]
+atlas = ExtResource("atk_tex")
+region = Rect2(600, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="atk_4"]
+atlas = ExtResource("atk_tex")
+region = Rect2(800, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="atk_5"]
+atlas = ExtResource("atk_tex")
+region = Rect2(1000, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="atk2_0"]
+atlas = ExtResource("atk2_tex")
+region = Rect2(0, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="atk2_1"]
+atlas = ExtResource("atk2_tex")
+region = Rect2(200, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="atk2_2"]
+atlas = ExtResource("atk2_tex")
+region = Rect2(400, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="atk2_3"]
+atlas = ExtResource("atk2_tex")
+region = Rect2(600, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="atk2_4"]
+atlas = ExtResource("atk2_tex")
+region = Rect2(800, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="atk2_5"]
+atlas = ExtResource("atk2_tex")
+region = Rect2(1000, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="death_0"]
+atlas = ExtResource("death_tex")
+region = Rect2(0, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="death_1"]
+atlas = ExtResource("death_tex")
+region = Rect2(200, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="death_2"]
+atlas = ExtResource("death_tex")
+region = Rect2(400, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="death_3"]
+atlas = ExtResource("death_tex")
+region = Rect2(600, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="death_4"]
+atlas = ExtResource("death_tex")
+region = Rect2(800, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="death_5"]
+atlas = ExtResource("death_tex")
+region = Rect2(1000, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="fall_0"]
+atlas = ExtResource("fall_tex")
+region = Rect2(0, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="fall_1"]
+atlas = ExtResource("fall_tex")
+region = Rect2(200, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="jump_0"]
+atlas = ExtResource("jump_tex")
+region = Rect2(0, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="jump_1"]
+atlas = ExtResource("jump_tex")
+region = Rect2(200, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="hurt_0"]
+atlas = ExtResource("hurt_tex")
+region = Rect2(0, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="hurt_1"]
+atlas = ExtResource("hurt_tex")
+region = Rect2(200, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="hurt_2"]
+atlas = ExtResource("hurt_tex")
+region = Rect2(400, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="hurt_3"]
+atlas = ExtResource("hurt_tex")
+region = Rect2(600, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="hurtflash_0"]
+atlas = ExtResource("hurtflash_tex")
+region = Rect2(0, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="hurtflash_1"]
+atlas = ExtResource("hurtflash_tex")
+region = Rect2(200, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="hurtflash_2"]
+atlas = ExtResource("hurtflash_tex")
+region = Rect2(400, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="hurtflash_3"]
+atlas = ExtResource("hurtflash_tex")
+region = Rect2(600, 0, 200, 200)
+
+[sub_resource type="SpriteFrames" id="frames_player"]
+animations = [{"frames": [{
+"duration": 1.0,
+"texture": SubResource("idle_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle_5")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle_6")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle_7")
+}
+],"loop": true,
+"name": &"idle",
+"speed": 8.0
+}, {"frames": [{
+"duration": 1.0,
+"texture": SubResource("run_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_5")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_6")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_7")
+}
+],"loop": true,
+"name": &"run",
+"speed": 12.0
+}, {"frames": [{
+"duration": 1.0,
+"texture": SubResource("atk_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk_5")
+}
+],"loop": false,
+"name": &"attack",
+"speed": 14.0
+}, {"frames": [{
+"duration": 1.0,
+"texture": SubResource("atk2_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk2_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk2_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk2_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk2_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk2_5")
+}
+],"loop": false,
+"name": &"attack2",
+"speed": 14.0
+}, {"frames": [{
+"duration": 1.0,
+"texture": SubResource("death_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("death_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("death_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("death_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("death_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("death_5")
+}
+],"loop": false,
+"name": &"death",
+"speed": 8.0
+}, {"frames": [{
+"duration": 1.0,
+"texture": SubResource("fall_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("fall_1")
+}
+],"loop": true,
+"name": &"fall",
+"speed": 6.0
+}, {"frames": [{
+"duration": 1.0,
+"texture": SubResource("jump_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("jump_1")
+}
+],"loop": false,
+"name": &"jump",
+"speed": 6.0
+}, {"frames": [{
+"duration": 1.0,
+"texture": SubResource("hurt_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("hurt_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("hurt_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("hurt_3")
+}
+],"loop": false,
+"name": &"hurt",
+"speed": 10.0
+}, {"frames": [{
+"duration": 1.0,
+"texture": SubResource("hurtflash_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("hurtflash_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("hurtflash_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("hurtflash_3")
+}
+],"loop": false,
+"name": &"hurt_flash",
+"speed": 14.0
+}]
+
+[sub_resource type="RectangleShape2D" id="shape_player"]
+size = Vector2(36, 51)
+
+[node name="Player" type="CharacterBody2D"]
+script = ExtResource("1_script")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("frames_player")
+animation = &"idle"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-6, -5)
+shape = SubResource("shape_player")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(0, -85)
+current = true
+zoom = Vector2(1.5, 1.5)
+position_smoothing_enabled = true
+position_smoothing_speed = 6.0

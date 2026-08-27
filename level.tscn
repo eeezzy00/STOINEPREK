@@ -1,0 +1,109 @@
+[gd_scene format=3 uid="uid://cd662smbv1siu"]
+
+[ext_resource type="Script" uid="uid://br1j4tln534tq" path="res://level.gd" id="0_level_script"]
+[ext_resource type="PackedScene" path="res://player.tscn" id="1_player"]
+[ext_resource type="Texture2D" uid="uid://wt2hpqups2bp" path="res://background/city 1/1.png" id="bg_1"]
+[ext_resource type="Texture2D" uid="uid://bdqdt3ldbavxu" path="res://background/city 1/2.png" id="bg_2"]
+[ext_resource type="Texture2D" uid="uid://b7fhg7b82egic" path="res://background/city 1/3.png" id="bg_3"]
+[ext_resource type="Texture2D" uid="uid://c13axrho42p36" path="res://background/city 1/4.png" id="bg_4"]
+[ext_resource type="Texture2D" uid="uid://b570whu3eo1j0" path="res://background/city 1/5.png" id="bg_5"]
+
+[node name="Level" type="Node2D" unique_id=1864366894]
+script = ExtResource("0_level_script")
+
+[node name="ParallaxLayer1" type="Parallax2D" parent="." unique_id=2059772200]
+scroll_scale = Vector2(0.05, 1)
+repeat_size = Vector2(1440, 0)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxLayer1" unique_id=1354442685]
+position = Vector2(576, 295)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("bg_1")
+
+[node name="ParallaxLayer2" type="Parallax2D" parent="." unique_id=1206135987]
+scroll_scale = Vector2(0.2, 1)
+repeat_size = Vector2(1440, 0)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxLayer2" unique_id=1469667444]
+position = Vector2(576, 295)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("bg_2")
+
+[node name="ParallaxLayer3" type="Parallax2D" parent="." unique_id=534317183]
+scroll_scale = Vector2(0.4, 1)
+repeat_size = Vector2(1440, 0)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxLayer3" unique_id=903225900]
+position = Vector2(576, 295)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("bg_3")
+
+[node name="ParallaxLayer4" type="Parallax2D" parent="." unique_id=338458073]
+scroll_scale = Vector2(0.6, 1)
+repeat_size = Vector2(1440, 0)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxLayer4" unique_id=259859870]
+position = Vector2(576, 295)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("bg_4")
+
+[node name="ParallaxLayer5" type="Parallax2D" parent="." unique_id=856615701]
+scroll_scale = Vector2(0.85, 1)
+repeat_size = Vector2(1440, 0)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxLayer5" unique_id=321655055]
+position = Vector2(576, 295)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("bg_5")
+
+[node name="RoadBand1" type="ColorRect" parent="." unique_id=334157301]
+offset_left = -1440.0
+offset_top = 749.0
+offset_right = 2880.0
+offset_bottom = 836.0
+color = Color(0.11, 0.1, 0.14, 1)
+
+[node name="RoadBand2" type="ColorRect" parent="." unique_id=1218783681]
+offset_left = -1440.0
+offset_top = 836.0
+offset_right = 2880.0
+offset_bottom = 923.0
+color = Color(0.085, 0.078, 0.115, 1)
+
+[node name="RoadBand3" type="ColorRect" parent="." unique_id=1900956307]
+offset_left = -1440.0
+offset_top = 923.0
+offset_right = 2880.0
+offset_bottom = 1010.0
+color = Color(0.065, 0.06, 0.09, 1)
+
+[node name="RoadBand4" type="ColorRect" parent="." unique_id=1061607090]
+offset_left = -1440.0
+offset_top = 1010.0
+offset_right = 2880.0
+offset_bottom = 1100.0
+color = Color(0.045, 0.04, 0.065, 1)
+
+[node name="Sidewalk" type="ColorRect" parent="." unique_id=719844462]
+offset_left = -1440.0
+offset_top = 700.0
+offset_right = 2880.0
+offset_bottom = 745.0
+color = Color(0.24, 0.23, 0.27, 1)
+
+[node name="SidewalkEdge" type="ColorRect" parent="." unique_id=2094538417]
+offset_left = -1440.0
+offset_top = 745.0
+offset_right = 2880.0
+offset_bottom = 749.0
+color = Color(0.14, 0.13, 0.17, 1)
+
+[node name="RoadDetails" type="Node2D" parent="." unique_id=259432783]
+
+[node name="Player" parent="." unique_id=929472162 instance=ExtResource("1_player")]
+position = Vector2(576, 679)
