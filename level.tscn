@@ -182,12 +182,8 @@ color = Color(0.14, 0.13, 0.17, 1)
 [node name="RoadDetails" type="Node2D" parent="." unique_id=259432783]
 
 [node name="SamuraiNPC" parent="." unique_id=1238124425 instance=ExtResource("2_samurai_npc")]
-position = Vector2(541.25, 670)
+position = Vector2(541.25, 673)
 scale = Vector2(1.55, 1.55)
-y_min = 650.0
-y_max = 695.0
 
 [node name="Player" parent="." unique_id=929472162 instance=ExtResource("1_player")]
-position = Vector2(617, 697)
-y_min = 679.0
-y_max = 724.0
+position = Vector2(617, 704)

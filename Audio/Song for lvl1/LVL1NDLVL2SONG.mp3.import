@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bcdwglv804wvt"
+path="res://.godot/imported/LVL1NDLVL2SONG.mp3-798ec1711dca7574c73d2dada2ae9c13.mp3str"
+
+[deps]
+
+source_file="res://Audio/Song for lvl1/LVL1NDLVL2SONG.mp3"
+dest_files=["res://.godot/imported/LVL1NDLVL2SONG.mp3-798ec1711dca7574c73d2dada2ae9c13.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

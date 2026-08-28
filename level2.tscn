@@ -9,6 +9,10 @@
 [ext_resource type="Texture2D" uid="uid://1d2wr58crmmi" path="res://background/city 5/4.png" id="bg_4"]
 [ext_resource type="Texture2D" uid="uid://3kwge6x1j4we" path="res://background/city 5/5.png" id="bg_5"]
 [ext_resource type="Texture2D" uid="uid://7srm4f2vluyk" path="res://background/city 5/6.png" id="bg_6"]
+[ext_resource type="Texture2D" uid="uid://ch4w7q0waw0sa" path="res://assets/Sidescroller Shooter - Central City/Background/Base Color.png" id="city_base_color"]
+[ext_resource type="Texture2D" uid="uid://c4l62jl045mhp" path="res://assets/Sidescroller Shooter - Central City/Background/Background Props.png" id="city_buildings"]
+[ext_resource type="Texture2D" uid="uid://c3y2wrtb6rjv3" path="res://assets/Sidescroller Shooter - Central City/Background/Frontal Fog.png" id="city_frontal_fog"]
+[ext_resource type="Texture2D" uid="uid://u80s34do5rv4" path="res://assets/Sidescroller Shooter - Central City/Background/Mid Fog.png" id="city_mid_fog"]
 [ext_resource type="Texture2D" uid="uid://ult6sj1kti50" path="res://assets/textures/road_asphalt.png" id="tex_road"]
 [ext_resource type="Texture2D" uid="uid://dg8olsppsyiay" path="res://assets/textures/sidewalk_concrete.png" id="tex_sidewalk"]
 
@@ -34,6 +38,7 @@ lamps_lit = false
 crosswalk_top = 779.0
 
 [node name="ParallaxLayer1" type="Parallax2D" parent="." unique_id=154082432]
+visible = false
 scroll_scale = Vector2(0.05, 1)
 repeat_size = Vector2(1440, 0)
 repeat_times = 3
@@ -44,6 +49,7 @@ scale = Vector2(2.5, 2.5)
 texture = ExtResource("bg_1")
 
 [node name="ParallaxLayer2" type="Parallax2D" parent="." unique_id=751327867]
+visible = false
 scroll_scale = Vector2(0.15, 1)
 repeat_size = Vector2(1440, 0)
 repeat_times = 3
@@ -64,6 +70,7 @@ scale = Vector2(2.5, 2.5)
 texture = ExtResource("bg_3")
 
 [node name="ParallaxLayer4" type="Parallax2D" parent="." unique_id=2061882406]
+visible = false
 scroll_scale = Vector2(0.45, 1)
 repeat_size = Vector2(1440, 0)
 repeat_times = 3
@@ -92,6 +99,48 @@ repeat_times = 3
 position = Vector2(576, 295)
 scale = Vector2(2.5, 2.5)
 texture = ExtResource("bg_6")
+
+[node name="CityBgBaseColor" type="Parallax2D" parent="." unique_id=1497904672]
+visible = false
+scroll_scale = Vector2(0.05, 1)
+repeat_size = Vector2(1440, 0)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="CityBgBaseColor" unique_id=269772323]
+visible = false
+position = Vector2(720, 220)
+scale = Vector2(3, 3)
+texture = ExtResource("city_base_color")
+
+[node name="CityBgBuildings" type="Parallax2D" parent="." unique_id=2070308696]
+visible = false
+scroll_scale = Vector2(0.4, 1)
+repeat_size = Vector2(624, 0)
+repeat_times = 7
+
+[node name="Sprite2D" type="Sprite2D" parent="CityBgBuildings" unique_id=890020692]
+visible = false
+position = Vector2(748, 581)
+scale = Vector2(3, 3)
+texture = ExtResource("city_buildings")
+
+[node name="CityFrontalFog" type="TextureRect" parent="." unique_id=1352843411]
+texture_repeat = 1
+offset_left = -1442.0
+offset_top = 650.0
+offset_right = 2878.0
+offset_bottom = 794.0
+texture = ExtResource("city_frontal_fog")
+stretch_mode = 1
+
+[node name="CityMidFog" type="TextureRect" parent="." unique_id=1342393078]
+texture_repeat = 1
+offset_left = -1635.0
+offset_top = -241.0
+offset_right = 2503.0
+offset_bottom = -97.0
+texture = ExtResource("city_mid_fog")
+stretch_mode = 1
 
 [node name="RoadBand1" type="TextureRect" parent="." unique_id=284378856]
 texture_repeat = 2
@@ -167,24 +216,16 @@ color = Color(0.14, 0.13, 0.17, 1)
 [node name="RoadDetails" type="Node2D" parent="." unique_id=1103236479]
 
 [node name="SamuraiNPC1" parent="." unique_id=1090222545 instance=ExtResource("2_samurai_npc")]
-position = Vector2(-1150, 670)
+position = Vector2(-1150, 673)
 scale = Vector2(1.55, 1.55)
-y_min = 650.0
-y_max = 695.0
 
 [node name="SamuraiNPC2" parent="." unique_id=955043075 instance=ExtResource("2_samurai_npc")]
-position = Vector2(200, 670)
+position = Vector2(200, 673)
 scale = Vector2(1.55, 1.55)
-y_min = 650.0
-y_max = 695.0
 
 [node name="SamuraiNPC3" parent="." unique_id=2133459549 instance=ExtResource("2_samurai_npc")]
-position = Vector2(-352.99997, 680)
+position = Vector2(-352.99997, 673)
 scale = Vector2(1.55, 1.55)
-y_min = 650.0
-y_max = 695.0
 
 [node name="Player" parent="." unique_id=466504916 instance=ExtResource("1_player")]
-position = Vector2(-1250, 697)
-y_min = 679.0
-y_max = 724.0
+position = Vector2(-1250, 704)

@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bygav4t7j35tc"
+path="res://.godot/imported/Katana_whoopfx_playeer.wav-8455d3028f0b329509bec70b8e9bfd03.sample"
+
+[deps]
+
+source_file="res://Audio/Katana Fx For Playyer/Katana_whoopfx_playeer.wav"
+dest_files=["res://.godot/imported/Katana_whoopfx_playeer.wav-8455d3028f0b329509bec70b8e9bfd03.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=0

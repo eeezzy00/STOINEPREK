@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cn1i3r7tfq1ib"
+path="res://.godot/imported/ambience background city.wav-a7e8df60fc4c51e65ea737e9a4a50000.sample"
+
+[deps]
+
+source_file="res://Audio/Ambience/ambience background city.wav"
+dest_files=["res://.godot/imported/ambience background city.wav-a7e8df60fc4c51e65ea737e9a4a50000.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=0

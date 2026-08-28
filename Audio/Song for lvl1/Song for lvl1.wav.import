@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dcl8d6hacmjsn"
+path="res://.godot/imported/Song for lvl1.wav-9dd905826e2215c1934ae166c683b00d.sample"
+
+[deps]
+
+source_file="res://Audio/Song for lvl1/Song for lvl1.wav"
+dest_files=["res://.godot/imported/Song for lvl1.wav-9dd905826e2215c1934ae166c683b00d.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=0

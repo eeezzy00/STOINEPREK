@@ -22,6 +22,16 @@ const CROSSWALK_STRIPE := Vector2(90.0, 14.0)
 const CROSSWALK_GAP := 16.0
 const CROSSWALK_COLOR := Color(0.85, 0.85, 0.82, 0.85)
 
+## mp3, not the original .wav -- the .wav (any compression mode, including
+## uncompressed PCM) reported playing=true but produced no audible output
+## in-editor; menu music (already mp3) was the only thing that ever
+## actually played, so this swaps format to match what's proven to work.
+const AMBIENCE_SOUND := preload("res://Audio/Ambience/CITY_SOUNDS_AMBIUNCE.mp3")
+## Shared across every level (level.tscn, level2.tscn, ...) -- one generic
+## "levels" track, distinct from the menu track, always playing while
+## you're in a level.
+const LEVEL_MUSIC := preload("res://Audio/Song for lvl1/LVL1NDLVL2SONG.mp3")
+
 const ACCENT_COLOR := Color(1, 0.18, 0.66, 1)
 const DEATH_COLOR := Color(0.92, 0.15, 0.15, 1)
 const DIM_TEXT_COLOR := Color(0.62, 0.42, 0.62, 1)
@@ -29,6 +39,10 @@ const FLASH_TEXT_COLOR := Color(1, 0.85, 0.95, 1)
 
 @export var next_level_path: String = ""
 @export var lamps_lit: bool = true
+## Top surface Y of the generated ground collider for road_details levels
+## (level.tscn, level2.tscn) -- see _setup_ground_collision. Matches the old
+## y_max standing depth those levels used before real gravity existed.
+@export var ground_y: float = 724.0
 
 ## Parallel arrays: sign_x[i] is positioned at SIGN_Y with type sign_types[i]
 ## ("warning", "circle", or "bus"). Empty by default -- each level opts in.
@@ -40,7 +54,10 @@ const FLASH_TEXT_COLOR := Color(1, 0.85, 0.95, 1)
 @export var crosswalk_top: float = 749.0
 @export var crosswalk_bottom: float = 950.0
 
-@onready var road_details: Node2D = $RoadDetails
+## Null for tile-based levels (level3+) that don't use the procedural
+## sidewalk/road decor at all -- _ready() skips that whole step when absent,
+## since _spawn_lamps() etc. all assume this node exists.
+@onready var road_details: Node2D = get_node_or_null("RoadDetails")
 @onready var lamp_scene: PackedScene = preload("res://street_lamp.tscn")
 @onready var sign_scene: PackedScene = preload("res://road_sign.tscn")
 @onready var sign_warning_tex: Texture2D = preload("res://assets/textures/sign_warning.png")
@@ -53,14 +70,48 @@ var _defeat_shown := false
 
 
 func _ready() -> void:
+	add_to_group("level")
 	TelemetryLogger.start_run()
-	_spawn_lamps()
-	_draw_road_dashes()
-	_draw_sidewalk_seams()
-	_spawn_signs()
-	_draw_crosswalks()
+	if road_details:
+		_spawn_lamps()
+		_draw_road_dashes()
+		_draw_sidewalk_seams()
+		_spawn_signs()
+		_draw_crosswalks()
+		_setup_ground_collision()
 	_setup_enemies()
 	_setup_player()
+	_play_level_audio()
+
+
+## Real floor for real gravity: level3+ paint their own tile collision, but
+## the sidewalk levels (level.tscn, level2.tscn) only ever had the visual
+## sidewalk texture plus a fake y_min/y_max depth clamp on each character --
+## now that movement is real platformer physics, they need an actual
+## collision body to land on. One flat StaticBody2D spanning the whole road.
+func _setup_ground_collision() -> void:
+	var body := StaticBody2D.new()
+	body.collision_layer = 4  # Walls -- same layer level3's tile collision uses
+	body.collision_mask = 0
+	var shape := CollisionShape2D.new()
+	var rect := RectangleShape2D.new()
+	var thickness := 200.0
+	rect.size = Vector2(ROAD_MAX_X - ROAD_MIN_X, thickness)
+	shape.shape = rect
+	shape.position = Vector2((ROAD_MIN_X + ROAD_MAX_X) / 2.0, ground_y + thickness / 2.0)
+	body.add_child(shape)
+	add_child(body)
+
+
+## Routed through MusicManager (an autoload, survives scene changes) rather
+## than local AudioStreamPlayer children -- level.tscn/level2.tscn reload
+## constantly (death, bot restarts, F5-panel level switch), and a
+## scene-local player would restart music/ambience from 0 on every single
+## one of those. MusicManager no-ops if the same stream is already playing,
+## so both just keep going uninterrupted across reloads.
+func _play_level_audio() -> void:
+	MusicManager.play_ambience(AMBIENCE_SOUND)
+	MusicManager.play_music(LEVEL_MUSIC)
 
 
 func _spawn_lamps() -> void:
@@ -131,6 +182,14 @@ func _setup_enemies() -> void:
 		enemy.died.connect(_on_enemy_died)
 
 
+## Called by the admin panel when it spawns an extra Samurai NPC mid-run --
+## without this, a spawned NPC's death wouldn't count toward the victory
+## condition at all (or worse, could make _enemies_alive go negative).
+func register_enemy(enemy: Node) -> void:
+	_enemies_alive += 1
+	enemy.died.connect(_on_enemy_died)
+
+
 func _on_enemy_died() -> void:
 	TelemetryLogger.log_kill()
 	_enemies_alive -= 1
@@ -138,7 +197,12 @@ func _on_enemy_died() -> void:
 		_victory_shown = true
 		TelemetryLogger.log_victory()
 		RunAnalyzer.show_summary(true)
-		_show_victory_screen()
+		if AutoPlayBot.active:
+			# Skip the screen entirely -- the bot doesn't click NEXT/QUIT,
+			# it just needs the next run started as fast as possible.
+			AutoPlayBot.request_restart()
+		else:
+			_show_victory_screen()
 
 
 func _setup_player() -> void:

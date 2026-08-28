@@ -1,6 +1,7 @@
 extends Node2D
 
 const CURSOR_OFFSET_X := -34.0
+const MENU_MUSIC := preload("res://Audio/Song for menu/GAMEDEV@mainthemevol1.mp3")
 
 @onready var menu_list: VBoxContainer = $CanvasLayer/UI/MenuList
 @onready var menu_cursor: Label = $CanvasLayer/UI/MenuCursor
@@ -14,10 +15,20 @@ func _ready() -> void:
 		button.mouse_entered.connect(_on_button_focus.bind(button))
 		button.focus_entered.connect(_on_button_focus.bind(button))
 	_snap_cursor_to(%NewGame)
+	# MusicManager is an autoload -- it survives the men.tscn <-> settings.tscn
+	# scene swap, so this call is a no-op (keeps playing uninterrupted) if
+	# the menu track is already going, and only actually starts it fresh
+	# the first time or when coming back from a level (which stops it).
+	MusicManager.play_music(MENU_MUSIC)
+	MusicManager.stop_ambience()
 
 
 func _on_new_game_pressed() -> void:
 	get_tree().change_scene_to_file("res://level.tscn")
+
+
+func _on_settings_pressed() -> void:
+	get_tree().change_scene_to_file("res://settings.tscn")
 
 
 func _on_quit_pressed() -> void:

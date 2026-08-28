@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bb2bsf368m0y0"
+path="res://.godot/imported/Katana_whoop_npc second hit.wav-738dbb5e24c075799fc596b8f972a56f.sample"
+
+[deps]
+
+source_file="res://Audio/Katana Fx For NPC/Katana_whoop_npc second hit.wav"
+dest_files=["res://.godot/imported/Katana_whoop_npc second hit.wav-738dbb5e24c075799fc596b8f972a56f.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=0

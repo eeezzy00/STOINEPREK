@@ -3,19 +3,19 @@
 [ext_resource type="Script" uid="uid://b6stpb6484kv" path="res://men.gd" id="1_m7n7p"]
 [ext_resource type="Material" uid="uid://bkgvufqny5mtt" path="res://shaders/crt_overlay_mat.tres" id="2_x55vd"]
 [ext_resource type="Texture2D" uid="uid://c0utn2wsmhqnv" path="res://assets/Martial Hero/Sprites/Run.png" id="5_run"]
-[ext_resource type="FontFile" path="res://assets/fonts/pixel_ui.fnt" id="8_pixelfont"]
+[ext_resource type="FontFile" uid="uid://c472inn0oog1u" path="res://assets/fonts/pixel_ui.fnt" id="8_pixelfont"]
 
 [sub_resource type="Theme" id="Theme_terminal"]
-Button/fonts/font = ExtResource("8_pixelfont")
 Button/colors/font_shadow_color = Color(0.878, 0.251, 0.984, 0.9)
 Button/constants/shadow_offset_x = 0
 Button/constants/shadow_offset_y = 0
 Button/constants/shadow_outline_size = 3
-Label/fonts/font = ExtResource("8_pixelfont")
+Button/fonts/font = ExtResource("8_pixelfont")
 Label/colors/font_shadow_color = Color(0.878, 0.251, 0.984, 0.9)
 Label/constants/shadow_offset_x = 0
 Label/constants/shadow_offset_y = 0
 Label/constants/shadow_outline_size = 3
+Label/fonts/font = ExtResource("8_pixelfont")
 
 [sub_resource type="AtlasTexture" id="run_0"]
 atlas = ExtResource("5_run")
@@ -120,8 +120,8 @@ text = "BETA 0.01"
 
 [node name="Runner" type="AnimatedSprite2D" parent="CanvasLayer/UI" unique_id=1012294124]
 modulate = Color(0.878, 0.251, 0.984, 1)
-position = Vector2(95.000015, 279)
-scale = Vector2(0.9, 0.9)
+position = Vector2(721, 341)
+scale = Vector2(9.199999, 9.41)
 sprite_frames = SubResource("frames_menu_runner")
 animation = &"run"
 autoplay = "run"
@@ -131,8 +131,10 @@ layout_mode = 1
 anchors_preset = -1
 anchor_top = 0.42
 anchor_bottom = 0.92
-offset_left = 110.0
-offset_right = 430.0
+offset_left = 425.0
+offset_top = -101.16
+offset_right = 746.0
+offset_bottom = 160.83997
 theme_override_constants/separation = 18
 
 [node name="NewGame" type="Button" parent="CanvasLayer/UI/MenuList" unique_id=1094525694]
@@ -202,7 +204,6 @@ theme_override_styles/pressed = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_flat")
-disabled = true
 text = "SETTINGS"
 alignment = 0
 
@@ -255,12 +256,13 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 6.0
-offset_bottom = 6.0
+offset_top = 2.0
+offset_bottom = 2.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 1)
 
 [connection signal="pressed" from="CanvasLayer/UI/MenuList/NewGame" to="." method="_on_new_game_pressed"]
+[connection signal="pressed" from="CanvasLayer/UI/MenuList/Settings" to="." method="_on_settings_pressed"]
 [connection signal="pressed" from="CanvasLayer/UI/MenuList/Quit" to="." method="_on_quit_pressed"]
