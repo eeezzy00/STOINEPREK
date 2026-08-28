@@ -1,0 +1,229 @@
+[gd_scene load_steps=33 format=3]
+
+[ext_resource type="Script" path="res://hit_effect.gd" id="0_script"]
+[ext_resource type="Texture2D" path="res://assets/pixel effects/10_weaponhit_spritesheet.png" id="hit_tex"]
+
+[sub_resource type="AtlasTexture" id="hit_1"]
+atlas = ExtResource("hit_tex")
+region = Rect2(100, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_2"]
+atlas = ExtResource("hit_tex")
+region = Rect2(200, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_3"]
+atlas = ExtResource("hit_tex")
+region = Rect2(300, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_4"]
+atlas = ExtResource("hit_tex")
+region = Rect2(400, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_5"]
+atlas = ExtResource("hit_tex")
+region = Rect2(500, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_6"]
+atlas = ExtResource("hit_tex")
+region = Rect2(0, 100, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_7"]
+atlas = ExtResource("hit_tex")
+region = Rect2(100, 100, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_8"]
+atlas = ExtResource("hit_tex")
+region = Rect2(200, 100, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_9"]
+atlas = ExtResource("hit_tex")
+region = Rect2(300, 100, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_10"]
+atlas = ExtResource("hit_tex")
+region = Rect2(400, 100, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_11"]
+atlas = ExtResource("hit_tex")
+region = Rect2(500, 100, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_12"]
+atlas = ExtResource("hit_tex")
+region = Rect2(0, 200, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_13"]
+atlas = ExtResource("hit_tex")
+region = Rect2(100, 200, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_14"]
+atlas = ExtResource("hit_tex")
+region = Rect2(200, 200, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_15"]
+atlas = ExtResource("hit_tex")
+region = Rect2(300, 200, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_16"]
+atlas = ExtResource("hit_tex")
+region = Rect2(400, 200, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_17"]
+atlas = ExtResource("hit_tex")
+region = Rect2(500, 200, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_18"]
+atlas = ExtResource("hit_tex")
+region = Rect2(0, 300, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_19"]
+atlas = ExtResource("hit_tex")
+region = Rect2(100, 300, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_20"]
+atlas = ExtResource("hit_tex")
+region = Rect2(200, 300, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_21"]
+atlas = ExtResource("hit_tex")
+region = Rect2(300, 300, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_22"]
+atlas = ExtResource("hit_tex")
+region = Rect2(400, 300, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_23"]
+atlas = ExtResource("hit_tex")
+region = Rect2(500, 300, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_24"]
+atlas = ExtResource("hit_tex")
+region = Rect2(0, 400, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_25"]
+atlas = ExtResource("hit_tex")
+region = Rect2(100, 400, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_26"]
+atlas = ExtResource("hit_tex")
+region = Rect2(200, 400, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_27"]
+atlas = ExtResource("hit_tex")
+region = Rect2(300, 400, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_28"]
+atlas = ExtResource("hit_tex")
+region = Rect2(400, 400, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_29"]
+atlas = ExtResource("hit_tex")
+region = Rect2(500, 400, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hit_30"]
+atlas = ExtResource("hit_tex")
+region = Rect2(0, 500, 100, 100)
+
+[sub_resource type="SpriteFrames" id="frames_hit"]
+animations = [{"frames": [{
+"duration": 1.0,
+"texture": SubResource("hit_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_5")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_6")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_7")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_8")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_9")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_10")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_11")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_12")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_13")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_14")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_15")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_16")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_17")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_18")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_19")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_20")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_21")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_22")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_23")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_24")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_25")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_26")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_27")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_28")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_29")
+}, {
+"duration": 1.0,
+"texture": SubResource("hit_30")
+}
+],
+"loop": false,
+"name": &"hit",
+"speed": 30.0
+}]
+
+[node name="HitEffect" type="AnimatedSprite2D"]
+scale = Vector2(0.7, 0.7)
+sprite_frames = SubResource("frames_hit")
+animation = &"hit"
+autoplay = "hit"
+script = ExtResource("0_script")

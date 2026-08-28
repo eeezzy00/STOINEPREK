@@ -1,79 +1,16 @@
-[gd_scene load_steps=59 format=3]
+[gd_scene format=3 uid="uid://dxcx53y53g05k"]
 
-[ext_resource type="Script" path="res://player.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/Martial Hero/Sprites/Idle.png" id="idle_tex"]
-[ext_resource type="Texture2D" path="res://assets/Martial Hero/Sprites/Run.png" id="run_tex"]
-[ext_resource type="Texture2D" path="res://assets/Martial Hero/Sprites/Attack1.png" id="atk_tex"]
-[ext_resource type="Texture2D" path="res://assets/Martial Hero/Sprites/Attack2.png" id="atk2_tex"]
-[ext_resource type="Texture2D" path="res://assets/Martial Hero/Sprites/Death.png" id="death_tex"]
-[ext_resource type="Texture2D" path="res://assets/Martial Hero/Sprites/Fall.png" id="fall_tex"]
-[ext_resource type="Texture2D" path="res://assets/Martial Hero/Sprites/Jump.png" id="jump_tex"]
-[ext_resource type="Texture2D" path="res://assets/Martial Hero/Sprites/Take Hit.png" id="hurt_tex"]
-[ext_resource type="Texture2D" path="res://assets/Martial Hero/Sprites/Take Hit - white silhouette.png" id="hurtflash_tex"]
-
-[sub_resource type="AtlasTexture" id="idle_0"]
-atlas = ExtResource("idle_tex")
-region = Rect2(0, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="idle_1"]
-atlas = ExtResource("idle_tex")
-region = Rect2(200, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="idle_2"]
-atlas = ExtResource("idle_tex")
-region = Rect2(400, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="idle_3"]
-atlas = ExtResource("idle_tex")
-region = Rect2(600, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="idle_4"]
-atlas = ExtResource("idle_tex")
-region = Rect2(800, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="idle_5"]
-atlas = ExtResource("idle_tex")
-region = Rect2(1000, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="idle_6"]
-atlas = ExtResource("idle_tex")
-region = Rect2(1200, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="idle_7"]
-atlas = ExtResource("idle_tex")
-region = Rect2(1400, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="run_0"]
-atlas = ExtResource("run_tex")
-region = Rect2(0, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="run_1"]
-atlas = ExtResource("run_tex")
-region = Rect2(200, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="run_2"]
-atlas = ExtResource("run_tex")
-region = Rect2(400, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="run_3"]
-atlas = ExtResource("run_tex")
-region = Rect2(600, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="run_4"]
-atlas = ExtResource("run_tex")
-region = Rect2(800, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="run_5"]
-atlas = ExtResource("run_tex")
-region = Rect2(1000, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="run_6"]
-atlas = ExtResource("run_tex")
-region = Rect2(1200, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="run_7"]
-atlas = ExtResource("run_tex")
-region = Rect2(1400, 0, 200, 200)
+[ext_resource type="Script" uid="uid://dnhb4exl1f4bw" path="res://player.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bjc8bhh1ajhmr" path="res://assets/Martial Hero/Sprites/Attack2.png" id="atk2_tex"]
+[ext_resource type="Texture2D" uid="uid://bnlm00hwhjl7d" path="res://assets/Martial Hero/Sprites/Attack1.png" id="atk_tex"]
+[ext_resource type="Texture2D" uid="uid://y7lptu3jrarc" path="res://assets/Martial Hero/Sprites/Death.png" id="death_tex"]
+[ext_resource type="Script" uid="uid://bjolo1nq11ufy" path="res://debug_hud.gd" id="debug_hud_script"]
+[ext_resource type="Texture2D" uid="uid://c0x22mnuho8il" path="res://assets/Martial Hero/Sprites/Fall.png" id="fall_tex"]
+[ext_resource type="Texture2D" uid="uid://dmqy6nw5omwvp" path="res://assets/Martial Hero/Sprites/Take Hit - white silhouette.png" id="hurtflash_tex"]
+[ext_resource type="Texture2D" uid="uid://lh5t840jyamc" path="res://assets/Martial Hero/Sprites/Take Hit.png" id="hurt_tex"]
+[ext_resource type="Texture2D" uid="uid://jj0mox7bv46d" path="res://assets/Martial Hero/Sprites/Idle.png" id="idle_tex"]
+[ext_resource type="Texture2D" uid="uid://bclj6yacly8j1" path="res://assets/Martial Hero/Sprites/Jump.png" id="jump_tex"]
+[ext_resource type="Texture2D" uid="uid://c0utn2wsmhqnv" path="res://assets/Martial Hero/Sprites/Run.png" id="run_tex"]
 
 [sub_resource type="AtlasTexture" id="atk_0"]
 atlas = ExtResource("atk_tex")
@@ -155,14 +92,6 @@ region = Rect2(0, 0, 200, 200)
 atlas = ExtResource("fall_tex")
 region = Rect2(200, 0, 200, 200)
 
-[sub_resource type="AtlasTexture" id="jump_0"]
-atlas = ExtResource("jump_tex")
-region = Rect2(0, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="jump_1"]
-atlas = ExtResource("jump_tex")
-region = Rect2(200, 0, 200, 200)
-
 [sub_resource type="AtlasTexture" id="hurt_0"]
 atlas = ExtResource("hurt_tex")
 region = Rect2(0, 0, 200, 200)
@@ -195,8 +124,195 @@ region = Rect2(400, 0, 200, 200)
 atlas = ExtResource("hurtflash_tex")
 region = Rect2(600, 0, 200, 200)
 
+[sub_resource type="AtlasTexture" id="idle_0"]
+atlas = ExtResource("idle_tex")
+region = Rect2(0, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="idle_1"]
+atlas = ExtResource("idle_tex")
+region = Rect2(200, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="idle_2"]
+atlas = ExtResource("idle_tex")
+region = Rect2(400, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="idle_3"]
+atlas = ExtResource("idle_tex")
+region = Rect2(600, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="idle_4"]
+atlas = ExtResource("idle_tex")
+region = Rect2(800, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="idle_5"]
+atlas = ExtResource("idle_tex")
+region = Rect2(1000, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="idle_6"]
+atlas = ExtResource("idle_tex")
+region = Rect2(1200, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="idle_7"]
+atlas = ExtResource("idle_tex")
+region = Rect2(1400, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="jump_0"]
+atlas = ExtResource("jump_tex")
+region = Rect2(0, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="jump_1"]
+atlas = ExtResource("jump_tex")
+region = Rect2(200, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_0"]
+atlas = ExtResource("run_tex")
+region = Rect2(0, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_1"]
+atlas = ExtResource("run_tex")
+region = Rect2(200, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_2"]
+atlas = ExtResource("run_tex")
+region = Rect2(400, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_3"]
+atlas = ExtResource("run_tex")
+region = Rect2(600, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_4"]
+atlas = ExtResource("run_tex")
+region = Rect2(800, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_5"]
+atlas = ExtResource("run_tex")
+region = Rect2(1000, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_6"]
+atlas = ExtResource("run_tex")
+region = Rect2(1200, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_7"]
+atlas = ExtResource("run_tex")
+region = Rect2(1400, 0, 200, 200)
+
 [sub_resource type="SpriteFrames" id="frames_player"]
-animations = [{"frames": [{
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("atk_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk_5")
+}],
+"loop": 0,
+"name": &"attack",
+"speed": 14.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("atk2_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk2_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk2_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk2_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk2_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk2_5")
+}],
+"loop": 0,
+"name": &"attack2",
+"speed": 14.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("death_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("death_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("death_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("death_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("death_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("death_5")
+}],
+"loop": 0,
+"name": &"death",
+"speed": 8.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("fall_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("fall_1")
+}],
+"loop": 1,
+"name": &"fall",
+"speed": 6.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("hurt_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("hurt_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("hurt_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("hurt_3")
+}],
+"loop": 0,
+"name": &"hurt",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("hurtflash_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("hurtflash_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("hurtflash_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("hurtflash_3")
+}],
+"loop": 0,
+"name": &"hurt_flash",
+"speed": 14.0
+}, {
+"frames": [{
 "duration": 1.0,
 "texture": SubResource("idle_0")
 }, {
@@ -220,11 +336,23 @@ animations = [{"frames": [{
 }, {
 "duration": 1.0,
 "texture": SubResource("idle_7")
-}
-],"loop": true,
+}],
+"loop": 1,
 "name": &"idle",
 "speed": 8.0
-}, {"frames": [{
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("jump_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("jump_1")
+}],
+"loop": 0,
+"name": &"jump",
+"speed": 6.0
+}, {
+"frames": [{
 "duration": 1.0,
 "texture": SubResource("run_0")
 }, {
@@ -248,147 +376,78 @@ animations = [{"frames": [{
 }, {
 "duration": 1.0,
 "texture": SubResource("run_7")
-}
-],"loop": true,
+}],
+"loop": 1,
 "name": &"run",
 "speed": 12.0
-}, {"frames": [{
-"duration": 1.0,
-"texture": SubResource("atk_0")
-}, {
-"duration": 1.0,
-"texture": SubResource("atk_1")
-}, {
-"duration": 1.0,
-"texture": SubResource("atk_2")
-}, {
-"duration": 1.0,
-"texture": SubResource("atk_3")
-}, {
-"duration": 1.0,
-"texture": SubResource("atk_4")
-}, {
-"duration": 1.0,
-"texture": SubResource("atk_5")
-}
-],"loop": false,
-"name": &"attack",
-"speed": 14.0
-}, {"frames": [{
-"duration": 1.0,
-"texture": SubResource("atk2_0")
-}, {
-"duration": 1.0,
-"texture": SubResource("atk2_1")
-}, {
-"duration": 1.0,
-"texture": SubResource("atk2_2")
-}, {
-"duration": 1.0,
-"texture": SubResource("atk2_3")
-}, {
-"duration": 1.0,
-"texture": SubResource("atk2_4")
-}, {
-"duration": 1.0,
-"texture": SubResource("atk2_5")
-}
-],"loop": false,
-"name": &"attack2",
-"speed": 14.0
-}, {"frames": [{
-"duration": 1.0,
-"texture": SubResource("death_0")
-}, {
-"duration": 1.0,
-"texture": SubResource("death_1")
-}, {
-"duration": 1.0,
-"texture": SubResource("death_2")
-}, {
-"duration": 1.0,
-"texture": SubResource("death_3")
-}, {
-"duration": 1.0,
-"texture": SubResource("death_4")
-}, {
-"duration": 1.0,
-"texture": SubResource("death_5")
-}
-],"loop": false,
-"name": &"death",
-"speed": 8.0
-}, {"frames": [{
-"duration": 1.0,
-"texture": SubResource("fall_0")
-}, {
-"duration": 1.0,
-"texture": SubResource("fall_1")
-}
-],"loop": true,
-"name": &"fall",
-"speed": 6.0
-}, {"frames": [{
-"duration": 1.0,
-"texture": SubResource("jump_0")
-}, {
-"duration": 1.0,
-"texture": SubResource("jump_1")
-}
-],"loop": false,
-"name": &"jump",
-"speed": 6.0
-}, {"frames": [{
-"duration": 1.0,
-"texture": SubResource("hurt_0")
-}, {
-"duration": 1.0,
-"texture": SubResource("hurt_1")
-}, {
-"duration": 1.0,
-"texture": SubResource("hurt_2")
-}, {
-"duration": 1.0,
-"texture": SubResource("hurt_3")
-}
-],"loop": false,
-"name": &"hurt",
-"speed": 10.0
-}, {"frames": [{
-"duration": 1.0,
-"texture": SubResource("hurtflash_0")
-}, {
-"duration": 1.0,
-"texture": SubResource("hurtflash_1")
-}, {
-"duration": 1.0,
-"texture": SubResource("hurtflash_2")
-}, {
-"duration": 1.0,
-"texture": SubResource("hurtflash_3")
-}
-],"loop": false,
-"name": &"hurt_flash",
-"speed": 14.0
 }]
 
 [sub_resource type="RectangleShape2D" id="shape_player"]
 size = Vector2(36, 51)
 
-[node name="Player" type="CharacterBody2D"]
+[sub_resource type="SystemFont" id="SystemFont_debug"]
+font_names = PackedStringArray("Consolas", "Courier New", "Lucida Console", "monospace")
+subpixel_positioning = 0
+
+[node name="Player" type="CharacterBody2D" unique_id=257585976 groups=["player"]]
+collision_mask = 4
 script = ExtResource("1_script")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=710920675]
 sprite_frames = SubResource("frames_player")
 animation = &"idle"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(-6, -5)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1838480606]
+position = Vector2(-1, -3)
 shape = SubResource("shape_player")
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=860140883]
 position = Vector2(0, -85)
-current = true
 zoom = Vector2(1.5, 1.5)
+limit_left = -1440
+limit_right = 2880
+limit_smoothed = true
 position_smoothing_enabled = true
 position_smoothing_speed = 6.0
+drag_horizontal_enabled = true
+drag_left_margin = 0.3
+drag_right_margin = 0.3
+
+[node name="HealthBar" type="Node2D" parent="." unique_id=1000233757]
+position = Vector2(0, -42)
+
+[node name="Back" type="ColorRect" parent="HealthBar" unique_id=1246272676]
+offset_left = -20.0
+offset_top = -3.0
+offset_right = 20.0
+offset_bottom = 3.0
+color = Color(0.08, 0.06, 0.07, 0.85)
+
+[node name="Fill" type="ColorRect" parent="HealthBar" unique_id=1595042777]
+offset_left = -20.0
+offset_top = -3.0
+offset_right = 20.0
+offset_bottom = 3.0
+color = Color(0.78, 0.16, 0.16, 1)
+
+[node name="DebugHUD" type="CanvasLayer" parent="." unique_id=57239451]
+script = ExtResource("debug_hud_script")
+
+[node name="Panel" type="ColorRect" parent="DebugHUD" unique_id=947577572]
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 220.0
+offset_bottom = 230.0
+color = Color(0.02, 0.02, 0.03, 0.72)
+
+[node name="Label" type="Label" parent="DebugHUD/Panel" unique_id=958214431]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 212.0
+offset_bottom = 218.0
+theme_override_colors/font_color = Color(0.4, 1, 0.55, 1)
+theme_override_constants/line_spacing = 4
+theme_override_fonts/font = SubResource("SystemFont_debug")
+theme_override_font_sizes/font_size = 13
+text = "HP: 3 / 3"

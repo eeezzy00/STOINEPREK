@@ -1,15 +1,44 @@
 [gd_scene format=3 uid="uid://cd662smbv1siu"]
 
 [ext_resource type="Script" uid="uid://br1j4tln534tq" path="res://level.gd" id="0_level_script"]
-[ext_resource type="PackedScene" path="res://player.tscn" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://dxcx53y53g05k" path="res://player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://samurai_npc.tscn" id="2_samurai_npc"]
 [ext_resource type="Texture2D" uid="uid://wt2hpqups2bp" path="res://background/city 1/1.png" id="bg_1"]
 [ext_resource type="Texture2D" uid="uid://bdqdt3ldbavxu" path="res://background/city 1/2.png" id="bg_2"]
 [ext_resource type="Texture2D" uid="uid://b7fhg7b82egic" path="res://background/city 1/3.png" id="bg_3"]
 [ext_resource type="Texture2D" uid="uid://c13axrho42p36" path="res://background/city 1/4.png" id="bg_4"]
 [ext_resource type="Texture2D" uid="uid://b570whu3eo1j0" path="res://background/city 1/5.png" id="bg_5"]
+[ext_resource type="Texture2D" uid="uid://d3snjsnxykyod" path="res://assets/textures/city1_3_glow.png" id="glow_3"]
+[ext_resource type="Texture2D" uid="uid://d08sfg02x1lss" path="res://assets/textures/city1_4_glow.png" id="glow_4"]
+[ext_resource type="Texture2D" uid="uid://bda8icl4ovwi2" path="res://assets/textures/city1_5_glow.png" id="glow_5"]
+[ext_resource type="Texture2D" uid="uid://ult6sj1kti50" path="res://assets/textures/road_asphalt.png" id="tex_road"]
+[ext_resource type="Texture2D" uid="uid://dg8olsppsyiay" path="res://assets/textures/sidewalk_concrete.png" id="tex_sidewalk"]
+
+[sub_resource type="CanvasItemMaterial" id="glow_blend"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="sidewalk_shade_gradient"]
+colors = PackedColorArray(0.03, 0.03, 0.05, 0, 0.03, 0.03, 0.05, 0.8)
+
+[sub_resource type="GradientTexture2D" id="sidewalk_shade_tex"]
+gradient = SubResource("sidewalk_shade_gradient")
+width = 4
+height = 128
+fill_from = Vector2(0.5, 0)
+fill_to = Vector2(0.5, 1)
+
+[sub_resource type="GradientTexture2D" id="sidewalk_shade_top_tex"]
+gradient = SubResource("sidewalk_shade_gradient")
+width = 4
+fill_from = Vector2(0.5, 1)
+fill_to = Vector2(0.5, 0)
 
 [node name="Level" type="Node2D" unique_id=1864366894]
 script = ExtResource("0_level_script")
+next_level_path = "res://level2.tscn"
+
+[node name="NightModulate" type="CanvasModulate" parent="." unique_id=1675435084]
+color = Color(0.42, 0.4, 0.56, 1)
 
 [node name="ParallaxLayer1" type="Parallax2D" parent="." unique_id=2059772200]
 scroll_scale = Vector2(0.05, 1)
@@ -41,6 +70,12 @@ position = Vector2(576, 295)
 scale = Vector2(2.5, 2.5)
 texture = ExtResource("bg_3")
 
+[node name="WindowGlow" type="Sprite2D" parent="ParallaxLayer3" unique_id=1076270901]
+material = SubResource("glow_blend")
+position = Vector2(576, 295)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("glow_3")
+
 [node name="ParallaxLayer4" type="Parallax2D" parent="." unique_id=338458073]
 scroll_scale = Vector2(0.6, 1)
 repeat_size = Vector2(1440, 0)
@@ -50,6 +85,12 @@ repeat_times = 3
 position = Vector2(576, 295)
 scale = Vector2(2.5, 2.5)
 texture = ExtResource("bg_4")
+
+[node name="WindowGlow" type="Sprite2D" parent="ParallaxLayer4" unique_id=1795888860]
+material = SubResource("glow_blend")
+position = Vector2(576, 295)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("glow_4")
 
 [node name="ParallaxLayer5" type="Parallax2D" parent="." unique_id=856615701]
 scroll_scale = Vector2(0.85, 1)
@@ -61,40 +102,75 @@ position = Vector2(576, 295)
 scale = Vector2(2.5, 2.5)
 texture = ExtResource("bg_5")
 
-[node name="RoadBand1" type="ColorRect" parent="." unique_id=334157301]
+[node name="WindowGlow" type="Sprite2D" parent="ParallaxLayer5" unique_id=106546583]
+material = SubResource("glow_blend")
+position = Vector2(576, 295)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("glow_5")
+
+[node name="RoadBand1" type="TextureRect" parent="." unique_id=334157301]
+texture_repeat = 2
 offset_left = -1440.0
 offset_top = 749.0
 offset_right = 2880.0
 offset_bottom = 836.0
-color = Color(0.11, 0.1, 0.14, 1)
+texture = ExtResource("tex_road")
+stretch_mode = 1
 
-[node name="RoadBand2" type="ColorRect" parent="." unique_id=1218783681]
+[node name="RoadBand2" type="TextureRect" parent="." unique_id=1218783681]
+modulate = Color(0.82, 0.82, 0.85, 1)
+texture_repeat = 2
 offset_left = -1440.0
 offset_top = 836.0
 offset_right = 2880.0
 offset_bottom = 923.0
-color = Color(0.085, 0.078, 0.115, 1)
+texture = ExtResource("tex_road")
+stretch_mode = 1
 
-[node name="RoadBand3" type="ColorRect" parent="." unique_id=1900956307]
+[node name="RoadBand3" type="TextureRect" parent="." unique_id=1900956307]
+modulate = Color(0.62, 0.62, 0.68, 1)
+texture_repeat = 2
 offset_left = -1440.0
 offset_top = 923.0
 offset_right = 2880.0
 offset_bottom = 1010.0
-color = Color(0.065, 0.06, 0.09, 1)
+texture = ExtResource("tex_road")
+stretch_mode = 1
 
-[node name="RoadBand4" type="ColorRect" parent="." unique_id=1061607090]
+[node name="RoadBand4" type="TextureRect" parent="." unique_id=1061607090]
+modulate = Color(0.42, 0.42, 0.5, 1)
+texture_repeat = 2
 offset_left = -1440.0
 offset_top = 1010.0
 offset_right = 2880.0
 offset_bottom = 1100.0
-color = Color(0.045, 0.04, 0.065, 1)
+texture = ExtResource("tex_road")
+stretch_mode = 1
 
-[node name="Sidewalk" type="ColorRect" parent="." unique_id=719844462]
+[node name="Sidewalk" type="TextureRect" parent="." unique_id=719844462]
+texture_repeat = 2
 offset_left = -1440.0
 offset_top = 700.0
 offset_right = 2880.0
 offset_bottom = 745.0
-color = Color(0.24, 0.23, 0.27, 1)
+texture = ExtResource("tex_sidewalk")
+stretch_mode = 1
+
+[node name="SidewalkShade" type="TextureRect" parent="." unique_id=372868355]
+offset_left = -1440.0
+offset_top = 700.0
+offset_right = 2880.0
+offset_bottom = 745.0
+mouse_filter = 2
+texture = SubResource("sidewalk_shade_tex")
+
+[node name="SidewalkShadeTop" type="TextureRect" parent="." unique_id=1234014661]
+offset_left = -1440.0
+offset_top = 700.0
+offset_right = 2880.0
+offset_bottom = 745.0
+mouse_filter = 2
+texture = SubResource("sidewalk_shade_top_tex")
 
 [node name="SidewalkEdge" type="ColorRect" parent="." unique_id=2094538417]
 offset_left = -1440.0
@@ -105,5 +181,13 @@ color = Color(0.14, 0.13, 0.17, 1)
 
 [node name="RoadDetails" type="Node2D" parent="." unique_id=259432783]
 
+[node name="SamuraiNPC" parent="." unique_id=1238124425 instance=ExtResource("2_samurai_npc")]
+position = Vector2(541.25, 670)
+scale = Vector2(1.55, 1.55)
+y_min = 650.0
+y_max = 695.0
+
 [node name="Player" parent="." unique_id=929472162 instance=ExtResource("1_player")]
-position = Vector2(576, 679)
+position = Vector2(617, 697)
+y_min = 679.0
+y_max = 724.0

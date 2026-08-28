@@ -1,0 +1,370 @@
+[gd_scene load_steps=39 format=3]
+
+[ext_resource type="Script" path="res://template_hero_test.gd" id="0_script"]
+[ext_resource type="Texture2D" path="res://assets/template/individual_sheets/male_hero_template-idle.png" id="idle_tex"]
+[ext_resource type="Texture2D" path="res://assets/template/individual_sheets/male_hero_template-walk.png" id="walk_tex"]
+[ext_resource type="Texture2D" path="res://assets/template/individual_sheets/male_hero_template-run.png" id="run_tex"]
+[ext_resource type="Texture2D" path="res://assets/template/individual_sheets/male_hero_template-jump.png" id="jump_tex"]
+[ext_resource type="Texture2D" path="res://assets/template/individual_sheets/male_hero_template-fall_loop.png" id="fall_tex"]
+[ext_resource type="Texture2D" path="res://assets/template/individual_sheets/male_hero_template-combo_1.png" id="combo1_tex"]
+[ext_resource type="Texture2D" path="res://assets/template/individual_sheets/male_hero_template-combo_1_end.png" id="combo1end_tex"]
+
+[sub_resource type="AtlasTexture" id="idle_0"]
+atlas = ExtResource("idle_tex")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="idle_1"]
+atlas = ExtResource("idle_tex")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="idle_2"]
+atlas = ExtResource("idle_tex")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="idle_3"]
+atlas = ExtResource("idle_tex")
+region = Rect2(384, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="idle_4"]
+atlas = ExtResource("idle_tex")
+region = Rect2(512, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="idle_5"]
+atlas = ExtResource("idle_tex")
+region = Rect2(640, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="idle_6"]
+atlas = ExtResource("idle_tex")
+region = Rect2(768, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="idle_7"]
+atlas = ExtResource("idle_tex")
+region = Rect2(896, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="idle_8"]
+atlas = ExtResource("idle_tex")
+region = Rect2(1024, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="idle_9"]
+atlas = ExtResource("idle_tex")
+region = Rect2(1152, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="walk_0"]
+atlas = ExtResource("walk_tex")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="walk_1"]
+atlas = ExtResource("walk_tex")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="walk_2"]
+atlas = ExtResource("walk_tex")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="walk_3"]
+atlas = ExtResource("walk_tex")
+region = Rect2(384, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="walk_4"]
+atlas = ExtResource("walk_tex")
+region = Rect2(512, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="walk_5"]
+atlas = ExtResource("walk_tex")
+region = Rect2(640, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="walk_6"]
+atlas = ExtResource("walk_tex")
+region = Rect2(768, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="walk_7"]
+atlas = ExtResource("walk_tex")
+region = Rect2(896, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="walk_8"]
+atlas = ExtResource("walk_tex")
+region = Rect2(1024, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="walk_9"]
+atlas = ExtResource("walk_tex")
+region = Rect2(1152, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="run_0"]
+atlas = ExtResource("run_tex")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="run_1"]
+atlas = ExtResource("run_tex")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="run_2"]
+atlas = ExtResource("run_tex")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="run_3"]
+atlas = ExtResource("run_tex")
+region = Rect2(384, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="run_4"]
+atlas = ExtResource("run_tex")
+region = Rect2(512, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="run_5"]
+atlas = ExtResource("run_tex")
+region = Rect2(640, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="run_6"]
+atlas = ExtResource("run_tex")
+region = Rect2(768, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="run_7"]
+atlas = ExtResource("run_tex")
+region = Rect2(896, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="run_8"]
+atlas = ExtResource("run_tex")
+region = Rect2(1024, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="run_9"]
+atlas = ExtResource("run_tex")
+region = Rect2(1152, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="jump_0"]
+atlas = ExtResource("jump_tex")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="jump_1"]
+atlas = ExtResource("jump_tex")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="jump_2"]
+atlas = ExtResource("jump_tex")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="jump_3"]
+atlas = ExtResource("jump_tex")
+region = Rect2(384, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="jump_4"]
+atlas = ExtResource("jump_tex")
+region = Rect2(512, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="jump_5"]
+atlas = ExtResource("jump_tex")
+region = Rect2(640, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="fall_0"]
+atlas = ExtResource("fall_tex")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="fall_1"]
+atlas = ExtResource("fall_tex")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="fall_2"]
+atlas = ExtResource("fall_tex")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="combo1_0"]
+atlas = ExtResource("combo1_tex")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="combo1_1"]
+atlas = ExtResource("combo1_tex")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="combo1_2"]
+atlas = ExtResource("combo1_tex")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="combo1end_0"]
+atlas = ExtResource("combo1end_tex")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="combo1end_1"]
+atlas = ExtResource("combo1end_tex")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="combo1end_2"]
+atlas = ExtResource("combo1end_tex")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="combo1end_3"]
+atlas = ExtResource("combo1end_tex")
+region = Rect2(384, 0, 128, 128)
+
+[sub_resource type="SpriteFrames" id="frames_template"]
+animations = [{"frames": [{
+"duration": 1.0,
+"texture": SubResource("idle_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle_5")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle_6")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle_7")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle_8")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle_9")
+}
+],"loop": true,
+"name": &"idle",
+"speed": 8.0
+}, {"frames": [{
+"duration": 1.0,
+"texture": SubResource("walk_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk_5")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk_6")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk_7")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk_8")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk_9")
+}
+],"loop": true,
+"name": &"walk",
+"speed": 10.0
+}, {"frames": [{
+"duration": 1.0,
+"texture": SubResource("run_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_5")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_6")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_7")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_8")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_9")
+}
+],"loop": true,
+"name": &"run",
+"speed": 14.0
+}, {"frames": [{
+"duration": 1.0,
+"texture": SubResource("jump_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("jump_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("jump_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("jump_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("jump_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("jump_5")
+}
+],"loop": false,
+"name": &"jump",
+"speed": 10.0
+}, {"frames": [{
+"duration": 1.0,
+"texture": SubResource("fall_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("fall_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("fall_2")
+}
+],"loop": true,
+"name": &"fall_loop",
+"speed": 8.0
+}, {"frames": [{
+"duration": 1.0,
+"texture": SubResource("combo1_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("combo1_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("combo1_2")
+}
+],"loop": false,
+"name": &"combo1",
+"speed": 12.0
+}, {"frames": [{
+"duration": 1.0,
+"texture": SubResource("combo1end_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("combo1end_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("combo1end_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("combo1end_3")
+}
+],"loop": false,
+"name": &"combo1end",
+"speed": 12.0
+}]
+
+[node name="TemplateHero" type="AnimatedSprite2D"]
+sprite_frames = SubResource("frames_template")
+animation = &"idle"
+autoplay = "idle"
+scale = Vector2(1.65, 1.65)
+script = ExtResource("0_script")

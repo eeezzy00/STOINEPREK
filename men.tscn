@@ -2,6 +2,84 @@
 
 [ext_resource type="Script" uid="uid://b6stpb6484kv" path="res://men.gd" id="1_m7n7p"]
 [ext_resource type="Material" uid="uid://bkgvufqny5mtt" path="res://shaders/crt_overlay_mat.tres" id="2_x55vd"]
+[ext_resource type="Texture2D" uid="uid://c0utn2wsmhqnv" path="res://assets/Martial Hero/Sprites/Run.png" id="5_run"]
+[ext_resource type="FontFile" path="res://assets/fonts/pixel_ui.fnt" id="8_pixelfont"]
+
+[sub_resource type="Theme" id="Theme_terminal"]
+Button/fonts/font = ExtResource("8_pixelfont")
+Button/colors/font_shadow_color = Color(0.878, 0.251, 0.984, 0.9)
+Button/constants/shadow_offset_x = 0
+Button/constants/shadow_offset_y = 0
+Button/constants/shadow_outline_size = 3
+Label/fonts/font = ExtResource("8_pixelfont")
+Label/colors/font_shadow_color = Color(0.878, 0.251, 0.984, 0.9)
+Label/constants/shadow_offset_x = 0
+Label/constants/shadow_offset_y = 0
+Label/constants/shadow_outline_size = 3
+
+[sub_resource type="AtlasTexture" id="run_0"]
+atlas = ExtResource("5_run")
+region = Rect2(0, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_1"]
+atlas = ExtResource("5_run")
+region = Rect2(200, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_2"]
+atlas = ExtResource("5_run")
+region = Rect2(400, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_3"]
+atlas = ExtResource("5_run")
+region = Rect2(600, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_4"]
+atlas = ExtResource("5_run")
+region = Rect2(800, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_5"]
+atlas = ExtResource("5_run")
+region = Rect2(1000, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_6"]
+atlas = ExtResource("5_run")
+region = Rect2(1200, 0, 200, 200)
+
+[sub_resource type="AtlasTexture" id="run_7"]
+atlas = ExtResource("5_run")
+region = Rect2(1400, 0, 200, 200)
+
+[sub_resource type="SpriteFrames" id="frames_menu_runner"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("run_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_5")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_6")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_7")
+}],
+"loop": 1,
+"name": &"run",
+"speed": 12.0
+}]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_flat"]
 
@@ -17,6 +95,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = SubResource("Theme_terminal")
 metadata/_edit_use_anchors_ = true
 
 [node name="Background" type="ColorRect" parent="CanvasLayer/UI" unique_id=76987797]
@@ -25,123 +104,150 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.035, 0.01, 0.015, 1)
+color = Color(0.015, 0.015, 0.02, 1)
 metadata/_edit_use_anchors_ = true
 
-[node name="Title" type="Label" parent="CanvasLayer/UI" unique_id=379379894]
+[node name="BetaLabel" type="Label" parent="CanvasLayer/UI" unique_id=401570887]
 layout_mode = 0
-anchor_top = 0.08
-anchor_right = 1.0
-anchor_bottom = 0.32
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_colors/font_color = Color(1, 0.96, 0.94, 1)
-theme_override_colors/font_outline_color = Color(0.88, 0.05, 0.12, 1)
-theme_override_constants/outline_size = 10
-theme_override_font_sizes/font_size = 80
-text = "DESPOT'S ARENA"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
+offset_left = 24.0
+offset_top = 14.0
+offset_right = 200.0
+offset_bottom = 34.0
+theme_override_colors/font_color = Color(0.4, 0.36, 0.44, 1)
+theme_override_constants/shadow_outline_size = 0
+theme_override_font_sizes/font_size = 14
+text = "BETA 0.01"
+
+[node name="Runner" type="AnimatedSprite2D" parent="CanvasLayer/UI" unique_id=1012294124]
+modulate = Color(0.878, 0.251, 0.984, 1)
+position = Vector2(95.000015, 279)
+scale = Vector2(0.9, 0.9)
+sprite_frames = SubResource("frames_menu_runner")
+animation = &"run"
+autoplay = "run"
 
 [node name="MenuList" type="VBoxContainer" parent="CanvasLayer/UI" unique_id=1574563084]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.5
 anchor_top = 0.42
-anchor_right = 0.5
 anchor_bottom = 0.92
-offset_left = -260.0
-offset_right = 260.0
-theme_override_constants/separation = 20
+offset_left = 110.0
+offset_right = 430.0
+theme_override_constants/separation = 18
 
 [node name="NewGame" type="Button" parent="CanvasLayer/UI/MenuList" unique_id=1094525694]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(520, 48)
+custom_minimum_size = Vector2(320.445, 36)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.78, 0.75, 0.88, 1)
-theme_override_colors/font_focus_color = Color(0.95, 0.15, 0.18, 1)
-theme_override_colors/font_pressed_color = Color(1, 0.6, 0.55, 1)
-theme_override_colors/font_hover_color = Color(0.95, 0.15, 0.18, 1)
-theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0.5, 0.16, 0.58, 1)
+theme_override_colors/font_focus_color = Color(0.878, 0.251, 0.984, 1)
+theme_override_colors/font_pressed_color = Color(1, 0.85, 0.95, 1)
+theme_override_colors/font_hover_color = Color(0.878, 0.251, 0.984, 1)
+theme_override_font_sizes/font_size = 26
 theme_override_styles/normal = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_flat")
-text = "НОВАЯ ИГРА"
+text = "NEW GAME"
+alignment = 0
 
 [node name="Continue" type="Button" parent="CanvasLayer/UI/MenuList" unique_id=1898679074]
-custom_minimum_size = Vector2(520, 48)
+custom_minimum_size = Vector2(320, 36)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.78, 0.75, 0.88, 1)
+theme_override_colors/font_color = Color(0.5, 0.16, 0.58, 1)
+theme_override_colors/font_focus_color = Color(0.878, 0.251, 0.984, 1)
+theme_override_colors/font_pressed_color = Color(1, 0.85, 0.95, 1)
+theme_override_colors/font_hover_color = Color(0.878, 0.251, 0.984, 1)
 theme_override_colors/font_disabled_color = Color(0.35, 0.32, 0.4, 0.6)
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 26
 theme_override_styles/normal = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_flat")
 disabled = true
-text = "ПРОДОЛЖИТЬ"
+text = "CONTINUE"
+alignment = 0
 
 [node name="Speedrun" type="Button" parent="CanvasLayer/UI/MenuList" unique_id=323612471]
-custom_minimum_size = Vector2(520, 48)
+custom_minimum_size = Vector2(320, 36)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.78, 0.75, 0.88, 1)
+theme_override_colors/font_color = Color(0.5, 0.16, 0.58, 1)
+theme_override_colors/font_focus_color = Color(0.878, 0.251, 0.984, 1)
+theme_override_colors/font_pressed_color = Color(1, 0.85, 0.95, 1)
+theme_override_colors/font_hover_color = Color(0.878, 0.251, 0.984, 1)
 theme_override_colors/font_disabled_color = Color(0.35, 0.32, 0.4, 0.6)
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 26
 theme_override_styles/normal = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_flat")
 disabled = true
-text = "ПРОХОЖДЕНИЕ НА СКОРОСТЬ"
+text = "SPEEDRUN"
+alignment = 0
 
 [node name="Settings" type="Button" parent="CanvasLayer/UI/MenuList" unique_id=2142065743]
-custom_minimum_size = Vector2(520, 48)
+custom_minimum_size = Vector2(320, 36)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.78, 0.75, 0.88, 1)
+theme_override_colors/font_color = Color(0.5, 0.16, 0.58, 1)
+theme_override_colors/font_focus_color = Color(0.878, 0.251, 0.984, 1)
+theme_override_colors/font_pressed_color = Color(1, 0.85, 0.95, 1)
+theme_override_colors/font_hover_color = Color(0.878, 0.251, 0.984, 1)
 theme_override_colors/font_disabled_color = Color(0.35, 0.32, 0.4, 0.6)
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 26
 theme_override_styles/normal = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_flat")
 disabled = true
-text = "НАСТРОЙКИ"
+text = "SETTINGS"
+alignment = 0
 
 [node name="Language" type="Button" parent="CanvasLayer/UI/MenuList" unique_id=444796026]
-custom_minimum_size = Vector2(520, 48)
+custom_minimum_size = Vector2(320, 36)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.78, 0.75, 0.88, 1)
+theme_override_colors/font_color = Color(0.5, 0.16, 0.58, 1)
+theme_override_colors/font_focus_color = Color(0.878, 0.251, 0.984, 1)
+theme_override_colors/font_pressed_color = Color(1, 0.85, 0.95, 1)
+theme_override_colors/font_hover_color = Color(0.878, 0.251, 0.984, 1)
 theme_override_colors/font_disabled_color = Color(0.35, 0.32, 0.4, 0.6)
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 26
 theme_override_styles/normal = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_flat")
 disabled = true
-text = "ЯЗЫК - РУССКИЙ"
+text = "LANGUAGE - ENGLISH"
+alignment = 0
 
 [node name="Quit" type="Button" parent="CanvasLayer/UI/MenuList" unique_id=1546214458]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(520, 48)
+custom_minimum_size = Vector2(320, 36)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.78, 0.75, 0.88, 1)
-theme_override_colors/font_focus_color = Color(0.95, 0.15, 0.18, 1)
-theme_override_colors/font_pressed_color = Color(1, 0.6, 0.55, 1)
-theme_override_colors/font_hover_color = Color(0.95, 0.15, 0.18, 1)
-theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0.5, 0.16, 0.58, 1)
+theme_override_colors/font_focus_color = Color(0.878, 0.251, 0.984, 1)
+theme_override_colors/font_pressed_color = Color(1, 0.85, 0.95, 1)
+theme_override_colors/font_hover_color = Color(0.878, 0.251, 0.984, 1)
+theme_override_font_sizes/font_size = 26
 theme_override_styles/normal = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_flat")
-text = "ВЫХОД"
+text = "EXIT"
+alignment = 0
+
+[node name="MenuCursor" type="Label" parent="CanvasLayer/UI" unique_id=43409408]
+layout_mode = 0
+offset_right = 24.0
+offset_bottom = 28.0
+theme_override_colors/font_color = Color(0.878, 0.251, 0.984, 1)
+theme_override_font_sizes/font_size = 26
+text = ">"
 
 [node name="ScanlineOverlay" type="ColorRect" parent="CanvasLayer/UI" unique_id=165401381]
 material = ExtResource("2_x55vd")
@@ -149,10 +255,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 2.0
-offset_top = -2.0
-offset_right = 2.0
-offset_bottom = -2.0
+offset_top = 6.0
+offset_bottom = 6.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2

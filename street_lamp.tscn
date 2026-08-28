@@ -1,16 +1,6 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=2 format=3]
 
-[sub_resource type="Gradient" id="glow_gradient"]
-offsets = PackedFloat32Array(0, 1)
-colors = PackedColorArray(1, 0.83, 0.5, 0.85, 1, 0.83, 0.5, 0)
-
-[sub_resource type="GradientTexture2D" id="glow_tex"]
-gradient = SubResource("glow_gradient")
-width = 128
-height = 128
-fill = 1
-fill_from = Vector2(0.5, 0.5)
-fill_to = Vector2(1, 0.5)
+[ext_resource type="Texture2D" path="res://assets/textures/lamp_cone.png" id="1_cone"]
 
 [node name="StreetLamp" type="Node2D"]
 
@@ -25,8 +15,10 @@ size = Vector2(22, 16)
 color = Color(0.12, 0.11, 0.14, 1)
 
 [node name="Glow" type="PointLight2D" parent="."]
-position = Vector2(0, -188)
-texture = SubResource("glow_tex")
-texture_scale = 2.2
+position = Vector2(0, -180)
+scale = Vector2(1, 1.8)
+offset = Vector2(0, 93.5)
+texture = ExtResource("1_cone")
+texture_scale = 1.1
 color = Color(1, 0.82, 0.5, 1)
-energy = 1.1
+energy = 2.5

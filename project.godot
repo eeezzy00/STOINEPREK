@@ -20,6 +20,10 @@ config/icon="res://icon.svg"
 PhantomCameraManager="*uid://duq6jhf6unyis"
 DialogueManager="*uid://c3rodes2l3gxb"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
+TelemetryLogger="*res://telemetry_logger.gd"
+RunAnalyzer="*res://run_analyzer.gd"
+DebugVisualizer="*res://debug_visualizer.gd"
+AutoPlayBot="*res://autoplay_bot.gd"
 
 [input]
 
@@ -43,6 +47,14 @@ attack={
 "deadzone": 0.5,
 "events": [Object(InputEventMouseButton,"button_index":1), Object(InputEventKey,"physical_keycode":32)]
 }
+jump={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"physical_keycode":74)]
+}
+dodge={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"physical_keycode":67), Object(InputEventMouseButton,"button_index":2)]
+}
 
 [display]
 
@@ -56,6 +68,7 @@ enabled=PackedStringArray("res://addons/dialogue_manager/plugin.cfg", "res://add
 [physics]
 
 3d/physics_engine="Jolt Physics"
+common/physics_interpolation=true
 
 [rendering]
 

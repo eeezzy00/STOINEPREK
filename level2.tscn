@@ -1,0 +1,190 @@
+[gd_scene format=3 uid="uid://c7level2day01"]
+
+[ext_resource type="Script" uid="uid://br1j4tln534tq" path="res://level.gd" id="0_level_script"]
+[ext_resource type="PackedScene" uid="uid://dxcx53y53g05k" path="res://player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://samurai_npc.tscn" id="2_samurai_npc"]
+[ext_resource type="Texture2D" uid="uid://bm72xm658xxfw" path="res://background/city 5/1.png" id="bg_1"]
+[ext_resource type="Texture2D" uid="uid://cs6dw2arrdo75" path="res://background/city 5/2.png" id="bg_2"]
+[ext_resource type="Texture2D" uid="uid://djlldisax1j35" path="res://background/city 5/3.png" id="bg_3"]
+[ext_resource type="Texture2D" uid="uid://1d2wr58crmmi" path="res://background/city 5/4.png" id="bg_4"]
+[ext_resource type="Texture2D" uid="uid://3kwge6x1j4we" path="res://background/city 5/5.png" id="bg_5"]
+[ext_resource type="Texture2D" uid="uid://7srm4f2vluyk" path="res://background/city 5/6.png" id="bg_6"]
+[ext_resource type="Texture2D" uid="uid://ult6sj1kti50" path="res://assets/textures/road_asphalt.png" id="tex_road"]
+[ext_resource type="Texture2D" uid="uid://dg8olsppsyiay" path="res://assets/textures/sidewalk_concrete.png" id="tex_sidewalk"]
+
+[sub_resource type="Gradient" id="sidewalk_shade_gradient"]
+colors = PackedColorArray(0.03, 0.03, 0.05, 0, 0.03, 0.03, 0.05, 0.8)
+
+[sub_resource type="GradientTexture2D" id="sidewalk_shade_tex"]
+gradient = SubResource("sidewalk_shade_gradient")
+width = 4
+height = 128
+fill_from = Vector2(0.5, 0)
+fill_to = Vector2(0.5, 1)
+
+[sub_resource type="GradientTexture2D" id="sidewalk_shade_top_tex"]
+gradient = SubResource("sidewalk_shade_gradient")
+width = 4
+fill_from = Vector2(0.5, 1)
+fill_to = Vector2(0.5, 0)
+
+[node name="Level2" type="Node2D" unique_id=1278094738]
+script = ExtResource("0_level_script")
+lamps_lit = false
+crosswalk_top = 779.0
+
+[node name="ParallaxLayer1" type="Parallax2D" parent="." unique_id=154082432]
+scroll_scale = Vector2(0.05, 1)
+repeat_size = Vector2(1440, 0)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxLayer1" unique_id=1868597999]
+position = Vector2(576, 295)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("bg_1")
+
+[node name="ParallaxLayer2" type="Parallax2D" parent="." unique_id=751327867]
+scroll_scale = Vector2(0.15, 1)
+repeat_size = Vector2(1440, 0)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxLayer2" unique_id=842861499]
+position = Vector2(576, 295)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("bg_2")
+
+[node name="ParallaxLayer3" type="Parallax2D" parent="." unique_id=1769603454]
+scroll_scale = Vector2(0.3, 1)
+repeat_size = Vector2(1440, 0)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxLayer3" unique_id=1665002812]
+position = Vector2(576, 295)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("bg_3")
+
+[node name="ParallaxLayer4" type="Parallax2D" parent="." unique_id=2061882406]
+scroll_scale = Vector2(0.45, 1)
+repeat_size = Vector2(1440, 0)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxLayer4" unique_id=1043951194]
+position = Vector2(576, 295)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("bg_4")
+
+[node name="ParallaxLayer5" type="Parallax2D" parent="." unique_id=909422423]
+scroll_scale = Vector2(0.65, 1)
+repeat_size = Vector2(1440, 0)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxLayer5" unique_id=597953336]
+position = Vector2(576, 295)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("bg_5")
+
+[node name="ParallaxLayer6" type="Parallax2D" parent="." unique_id=1349115467]
+scroll_scale = Vector2(0.85, 1)
+repeat_size = Vector2(1440, 0)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxLayer6" unique_id=592150212]
+position = Vector2(576, 295)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("bg_6")
+
+[node name="RoadBand1" type="TextureRect" parent="." unique_id=284378856]
+texture_repeat = 2
+offset_left = -1440.0
+offset_top = 749.0
+offset_right = 2880.0
+offset_bottom = 836.0
+texture = ExtResource("tex_road")
+stretch_mode = 1
+
+[node name="RoadBand2" type="TextureRect" parent="." unique_id=1011706319]
+modulate = Color(0.86, 0.86, 0.88, 1)
+texture_repeat = 2
+offset_left = -1440.0
+offset_top = 836.0
+offset_right = 2880.0
+offset_bottom = 923.0
+texture = ExtResource("tex_road")
+stretch_mode = 1
+
+[node name="RoadBand3" type="TextureRect" parent="." unique_id=1394558506]
+modulate = Color(0.72, 0.72, 0.76, 1)
+texture_repeat = 2
+offset_left = -1440.0
+offset_top = 923.0
+offset_right = 2880.0
+offset_bottom = 1010.0
+texture = ExtResource("tex_road")
+stretch_mode = 1
+
+[node name="RoadBand4" type="TextureRect" parent="." unique_id=732578242]
+modulate = Color(0.58, 0.58, 0.64, 1)
+texture_repeat = 2
+offset_left = -1440.0
+offset_top = 1010.0
+offset_right = 2880.0
+offset_bottom = 1100.0
+texture = ExtResource("tex_road")
+stretch_mode = 1
+
+[node name="Sidewalk" type="TextureRect" parent="." unique_id=571283805]
+texture_repeat = 2
+offset_left = -1440.0
+offset_top = 700.0
+offset_right = 2880.0
+offset_bottom = 745.0
+texture = ExtResource("tex_sidewalk")
+stretch_mode = 1
+
+[node name="SidewalkShade" type="TextureRect" parent="." unique_id=755592862]
+offset_left = -1440.0
+offset_top = 700.0
+offset_right = 2880.0
+offset_bottom = 745.0
+mouse_filter = 2
+texture = SubResource("sidewalk_shade_tex")
+
+[node name="SidewalkShadeTop" type="TextureRect" parent="." unique_id=892203019]
+offset_left = -1440.0
+offset_top = 700.0
+offset_right = 2880.0
+offset_bottom = 745.0
+mouse_filter = 2
+texture = SubResource("sidewalk_shade_top_tex")
+
+[node name="SidewalkEdge" type="ColorRect" parent="." unique_id=1333714464]
+offset_left = -1440.0
+offset_top = 745.0
+offset_right = 2880.0
+offset_bottom = 749.0
+color = Color(0.14, 0.13, 0.17, 1)
+
+[node name="RoadDetails" type="Node2D" parent="." unique_id=1103236479]
+
+[node name="SamuraiNPC1" parent="." unique_id=1090222545 instance=ExtResource("2_samurai_npc")]
+position = Vector2(-1150, 670)
+scale = Vector2(1.55, 1.55)
+y_min = 650.0
+y_max = 695.0
+
+[node name="SamuraiNPC2" parent="." unique_id=955043075 instance=ExtResource("2_samurai_npc")]
+position = Vector2(200, 670)
+scale = Vector2(1.55, 1.55)
+y_min = 650.0
+y_max = 695.0
+
+[node name="SamuraiNPC3" parent="." unique_id=2133459549 instance=ExtResource("2_samurai_npc")]
+position = Vector2(-352.99997, 680)
+scale = Vector2(1.55, 1.55)
+y_min = 650.0
+y_max = 695.0
+
+[node name="Player" parent="." unique_id=466504916 instance=ExtResource("1_player")]
+position = Vector2(-1250, 697)
+y_min = 679.0
+y_max = 724.0

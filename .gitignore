@@ -2,5 +2,17 @@
 .godot/
 /android/
 
-# Reference game, not part of this project
+# Reference/demo asset packs, not used by any scene in this project
 /Brawler Heat/
+/assets/First Cut/
+/assets/Lazr_Demo_DistrictH1_OpenGL/
+/assets/Legacy Collection/
+/assets/vapor/
+
+# Generated telemetry data (not source content)
+/BAG/
+
+# Claude Code local tooling state, not game source
+.claude/
+.agents/
+skills-lock.json

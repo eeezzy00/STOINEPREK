@@ -6,24 +6,61 @@ const ROAD_MAX_X := 2880.0
 const LAMP_Y := 745.0
 const LAMP_SPACING := 420.0
 
-const DASH_Y := 775.0
-const DASH_SIZE := Vector2(36.0, 6.0)
-const DASH_GAP := 36.0
-const DASH_COLOR := Color(0.78, 0.74, 0.58, 0.9)
+const DASH_Y := 790.0
+const DASH_SIZE := Vector2(40.0, 7.0)
+const DASH_GAP := 30.0
+const DASH_COLOR := Color(0.88, 0.85, 0.7, 0.95)
 
 const SEAM_SPACING := 80.0
 const SIDEWALK_TOP := 700.0
 const SIDEWALK_BOTTOM := 745.0
 const SEAM_COLOR := Color(0.16, 0.15, 0.19, 1.0)
 
+const SIGN_Y := 745.0
+
+const CROSSWALK_STRIPE := Vector2(90.0, 14.0)
+const CROSSWALK_GAP := 16.0
+const CROSSWALK_COLOR := Color(0.85, 0.85, 0.82, 0.85)
+
+const ACCENT_COLOR := Color(1, 0.18, 0.66, 1)
+const DEATH_COLOR := Color(0.92, 0.15, 0.15, 1)
+const DIM_TEXT_COLOR := Color(0.62, 0.42, 0.62, 1)
+const FLASH_TEXT_COLOR := Color(1, 0.85, 0.95, 1)
+
+@export var next_level_path: String = ""
+@export var lamps_lit: bool = true
+
+## Parallel arrays: sign_x[i] is positioned at SIGN_Y with type sign_types[i]
+## ("warning", "circle", or "bus"). Empty by default -- each level opts in.
+@export var sign_x: PackedFloat32Array = []
+@export var sign_types: PackedStringArray = []
+
+## One crosswalk per entry in crosswalk_x, spanning crosswalk_top..crosswalk_bottom.
+@export var crosswalk_x: PackedFloat32Array = []
+@export var crosswalk_top: float = 749.0
+@export var crosswalk_bottom: float = 950.0
+
 @onready var road_details: Node2D = $RoadDetails
 @onready var lamp_scene: PackedScene = preload("res://street_lamp.tscn")
+@onready var sign_scene: PackedScene = preload("res://road_sign.tscn")
+@onready var sign_warning_tex: Texture2D = preload("res://assets/textures/sign_warning.png")
+@onready var sign_circle_tex: Texture2D = preload("res://assets/textures/sign_circle.png")
+@onready var sign_bus_tex: Texture2D = preload("res://assets/textures/sign_bus.png")
+
+var _enemies_alive := 0
+var _victory_shown := false
+var _defeat_shown := false
 
 
 func _ready() -> void:
+	TelemetryLogger.start_run()
 	_spawn_lamps()
 	_draw_road_dashes()
 	_draw_sidewalk_seams()
+	_spawn_signs()
+	_draw_crosswalks()
+	_setup_enemies()
+	_setup_player()
 
 
 func _spawn_lamps() -> void:
@@ -32,6 +69,8 @@ func _spawn_lamps() -> void:
 		var lamp := lamp_scene.instantiate()
 		lamp.position = Vector2(x, LAMP_Y)
 		road_details.add_child(lamp)
+		if not lamps_lit:
+			lamp.get_node("Glow").visible = false
 		x += LAMP_SPACING
 
 
@@ -46,6 +85,34 @@ func _draw_road_dashes() -> void:
 		x += DASH_SIZE.x + DASH_GAP
 
 
+func _spawn_signs() -> void:
+	for i in range(sign_x.size()):
+		var sign := sign_scene.instantiate()
+		sign.position = Vector2(sign_x[i], SIGN_Y)
+		var tex: Texture2D
+		match sign_types[i]:
+			"circle":
+				tex = sign_circle_tex
+			"bus":
+				tex = sign_bus_tex
+			_:
+				tex = sign_warning_tex
+		sign.get_node("Icon").texture = tex
+		road_details.add_child(sign)
+
+
+func _draw_crosswalks() -> void:
+	for cx in crosswalk_x:
+		var y := crosswalk_top
+		while y <= crosswalk_bottom:
+			var stripe := ColorRect.new()
+			stripe.color = CROSSWALK_COLOR
+			stripe.size = CROSSWALK_STRIPE
+			stripe.position = Vector2(cx - CROSSWALK_STRIPE.x / 2.0, y)
+			road_details.add_child(stripe)
+			y += CROSSWALK_STRIPE.y + CROSSWALK_GAP
+
+
 func _draw_sidewalk_seams() -> void:
 	var x := ROAD_MIN_X
 	while x <= ROAD_MAX_X:
@@ -55,3 +122,129 @@ func _draw_sidewalk_seams() -> void:
 		seam.position = Vector2(x, SIDEWALK_TOP)
 		road_details.add_child(seam)
 		x += SEAM_SPACING
+
+
+func _setup_enemies() -> void:
+	var enemies := get_tree().get_nodes_in_group("enemies")
+	_enemies_alive = enemies.size()
+	for enemy in enemies:
+		enemy.died.connect(_on_enemy_died)
+
+
+func _on_enemy_died() -> void:
+	TelemetryLogger.log_kill()
+	_enemies_alive -= 1
+	if _enemies_alive <= 0 and not _victory_shown and not _defeat_shown:
+		_victory_shown = true
+		TelemetryLogger.log_victory()
+		RunAnalyzer.show_summary(true)
+		_show_victory_screen()
+
+
+func _setup_player() -> void:
+	var player := get_tree().get_first_node_in_group("player")
+	if player:
+		player.died.connect(_on_player_died)
+
+
+func _on_player_died() -> void:
+	if _defeat_shown or _victory_shown:
+		return
+	_defeat_shown = true
+	var player := get_tree().get_first_node_in_group("player")
+	var hp_at_death: float = player.current_hp if player else 0.0
+	TelemetryLogger.log_death("defeated_by_enemy", hp_at_death)
+	RunAnalyzer.show_summary(false)
+	_show_death_screen()
+
+
+func _show_victory_screen() -> void:
+	var term_font := _make_term_font()
+	var buttons: Array[Button] = []
+
+	if next_level_path != "":
+		var next_btn := _make_victory_button("NEXT", term_font)
+		next_btn.pressed.connect(func(): get_tree().change_scene_to_file(next_level_path))
+		buttons.append(next_btn)
+
+	var quit_btn := _make_victory_button("QUIT", term_font)
+	quit_btn.pressed.connect(func(): get_tree().quit())
+	buttons.append(quit_btn)
+
+	_show_end_screen("LEVEL CLEARED", ACCENT_COLOR, term_font, buttons)
+
+
+func _show_death_screen() -> void:
+	var term_font := _make_term_font()
+
+	var restart_btn := _make_victory_button("RESTART", term_font)
+	restart_btn.pressed.connect(func(): get_tree().reload_current_scene())
+
+	var quit_btn := _make_victory_button("QUIT", term_font)
+	quit_btn.pressed.connect(func(): get_tree().change_scene_to_file("res://men.tscn"))
+
+	_show_end_screen("YOU DIED", DEATH_COLOR, term_font, [restart_btn, quit_btn])
+
+
+func _make_term_font() -> Font:
+	var term_font := SystemFont.new()
+	term_font.font_names = PackedStringArray(["Consolas", "Courier New", "Lucida Console", "monospace"])
+	return term_font
+
+
+func _show_end_screen(title_text: String, title_color: Color, term_font: Font, buttons: Array[Button]) -> void:
+	var canvas := CanvasLayer.new()
+	add_child(canvas)
+
+	var dim := ColorRect.new()
+	dim.color = Color(0.02, 0.01, 0.03, 0.82)
+	dim.anchor_right = 1.0
+	dim.anchor_bottom = 1.0
+	canvas.add_child(dim)
+
+	var title := Label.new()
+	title.text = title_text
+	title.anchor_right = 1.0
+	title.anchor_top = 0.28
+	title.anchor_bottom = 0.42
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	title.add_theme_font_override("font", term_font)
+	title.add_theme_font_size_override("font_size", 44)
+	title.add_theme_color_override("font_color", title_color)
+	canvas.add_child(title)
+
+	var vbox := VBoxContainer.new()
+	vbox.anchor_left = 0.5
+	vbox.anchor_right = 0.5
+	vbox.anchor_top = 0.5
+	vbox.anchor_bottom = 0.5
+	vbox.offset_left = -110.0
+	vbox.offset_right = 110.0
+	vbox.offset_top = -30.0
+	vbox.add_theme_constant_override("separation", 16)
+	canvas.add_child(vbox)
+
+	for button in buttons:
+		vbox.add_child(button)
+	if buttons.size() > 0:
+		buttons[0].grab_focus()
+
+
+func _make_victory_button(label: String, font: Font) -> Button:
+	var btn := Button.new()
+	btn.text = label
+	btn.custom_minimum_size = Vector2(220.0, 44.0)
+	btn.add_theme_font_override("font", font)
+	btn.add_theme_font_size_override("font_size", 26)
+	btn.add_theme_color_override("font_color", DIM_TEXT_COLOR)
+	btn.add_theme_color_override("font_hover_color", ACCENT_COLOR)
+	btn.add_theme_color_override("font_focus_color", ACCENT_COLOR)
+	btn.add_theme_color_override("font_pressed_color", FLASH_TEXT_COLOR)
+	var empty_style := StyleBoxEmpty.new()
+	btn.add_theme_stylebox_override("normal", empty_style)
+	btn.add_theme_stylebox_override("hover", empty_style)
+	btn.add_theme_stylebox_override("pressed", empty_style)
+	btn.add_theme_stylebox_override("focus", empty_style)
+	btn.add_theme_stylebox_override("disabled", empty_style)
+	return btn
