@@ -44,6 +44,21 @@ const FLASH_TEXT_COLOR := Color(1, 0.85, 0.95, 1)
 ## y_max standing depth those levels used before real gravity existed.
 @export var ground_y: float = 724.0
 
+## Camera2D.limit_* applied to the player's own camera in _setup_player() --
+## keeps the view from following the player down into the void when they
+## fall off the level, or past its sides/top. Defaults cover the road
+## levels (level.tscn, level2.tscn); level3 overrides these to its own
+## (much smaller) painted bounds.
+@export var camera_limit_left: float = ROAD_MIN_X - 40.0
+@export var camera_limit_right: float = ROAD_MAX_X + 40.0
+@export var camera_limit_top: float = -600.0
+@export var camera_limit_bottom: float = 900.0
+
+## Y below which the player, and any enemy, has fallen off the level and
+## dies instantly -- see player.gd/samurai_npc.gd. Comfortably below
+## camera_limit_bottom so the fall is visible before it's fatal.
+@export var death_y: float = 1400.0
+
 ## Parallel arrays: sign_x[i] is positioned at SIGN_Y with type sign_types[i]
 ## ("warning", "circle", or "bus"). Empty by default -- each level opts in.
 @export var sign_x: PackedFloat32Array = []
@@ -180,6 +195,7 @@ func _setup_enemies() -> void:
 	_enemies_alive = enemies.size()
 	for enemy in enemies:
 		enemy.died.connect(_on_enemy_died)
+		enemy.death_y = death_y
 
 
 ## Called by the admin panel when it spawns an extra Samurai NPC mid-run --
@@ -188,6 +204,7 @@ func _setup_enemies() -> void:
 func register_enemy(enemy: Node) -> void:
 	_enemies_alive += 1
 	enemy.died.connect(_on_enemy_died)
+	enemy.death_y = death_y
 
 
 func _on_enemy_died() -> void:
@@ -209,6 +226,11 @@ func _setup_player() -> void:
 	var player := get_tree().get_first_node_in_group("player")
 	if player:
 		player.died.connect(_on_player_died)
+		player.death_y = death_y
+		player.camera.limit_left = int(camera_limit_left)
+		player.camera.limit_right = int(camera_limit_right)
+		player.camera.limit_top = int(camera_limit_top)
+		player.camera.limit_bottom = int(camera_limit_bottom)
 
 
 func _on_player_died() -> void:
@@ -217,7 +239,8 @@ func _on_player_died() -> void:
 	_defeat_shown = true
 	var player := get_tree().get_first_node_in_group("player")
 	var hp_at_death: float = player.current_hp if player else 0.0
-	TelemetryLogger.log_death("defeated_by_enemy", hp_at_death)
+	var reason: String = player.death_reason if player else "defeated_by_enemy"
+	TelemetryLogger.log_death(reason, hp_at_death)
 	RunAnalyzer.show_summary(false)
 	_show_death_screen()
 

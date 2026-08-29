@@ -8,6 +8,15 @@ extends CharacterBody2D
 @export var strike_range: float = 50.0
 @export var camera_look_ahead: float = 45.0
 @export var camera_lead_rate: float = 6.0
+## Y below which falling off the level counts as death -- set per-level by
+## level.gd in _setup_player(), left at INF (never triggers) by default so
+## the standalone player.tscn scene doesn't randomly die if run alone.
+@export var death_y: float = INF
+## Sideways speed (px/s) applied for a few frames when this body detects it
+## landed squarely on top of another CharacterBody2D -- see
+## _resolve_character_stacking, breaks the "balanced on someone's head"
+## glitch two kinematic bodies can get stuck in.
+@export var stack_push_speed: float = 140.0
 
 @export_group("Jump")
 ## Upward speed (px/s) applied to real velocity.y at takeoff.
@@ -22,6 +31,24 @@ extends CharacterBody2D
 ## Seconds a jump press before actually landing is still remembered and
 ## fires the instant you touch down, instead of being silently dropped.
 @export var jump_buffer_time: float = 0.1
+
+@export_group("Wall Movement")
+## Downward speed clamp while actively sliding down a wall -- much slower
+## than a normal fall; this is what makes clinging to a wall feel like
+## clinging instead of just brushing past it on the way down.
+@export var wall_slide_speed: float = 90.0
+## Push-off speed on a wall jump, away from the wall (x) and upward (y).
+@export var wall_jump_speed_x: float = 380.0
+@export var wall_jump_speed_y: float = 420.0
+## Seconds after a wall jump during which horizontal air control is locked
+## to the push-off velocity instead of following input -- without this, the
+## very next frame's "velocity.x = move_input * move_speed" would cancel
+## the diagonal kick immediately if still holding toward the wall, killing
+## the jump before it ever reads as a jump.
+@export var wall_jump_control_lock: float = 0.15
+## Grace window (like coyote_time, but for walls) after leaving a wall
+## during which a jump input still counts as a wall jump.
+@export var wall_coyote_time: float = 0.1
 
 @export_group("Dash")
 @export var dash_duration: float = 0.2
@@ -45,6 +72,8 @@ extends CharacterBody2D
 @export var parry_regen_interval: float = 3.0
 @export var perfect_streak_for_bonus: int = 3
 
+const KNOCKBACK_DURATION := 0.1
+const STACK_UNSTICK_DURATION := 0.15
 const CAMERA_BASE_OFFSET := Vector2(0, -85)
 const HIT_EFFECT := preload("res://hit_effect.tscn")
 const AFTERIMAGE_COUNT := 4
@@ -144,6 +173,13 @@ var _next_hit_bonus := false
 
 var _is_attacking := false
 var _is_dead := false
+## Read by level.gd's _on_player_died() to pick the right telemetry reason.
+var death_reason := "defeated_by_enemy"
+
+var _knockback_timer := 0.0
+var _knockback_velocity_x := 0.0
+var _stack_unstick_timer := 0.0
+var _stack_unstick_velocity_x := 0.0
 var _attack_index := 0
 var _attack_cooldown_timer := 0.0
 var _attack_elapsed := 0.0
@@ -157,6 +193,19 @@ var _coyote_timer := 0.0
 var _jump_buffer_timer := 0.0
 var _jump_start_y := 0.0
 var _jump_min_y := 0.0
+
+## True only for frames where this NPC is actually clinging (holding into
+## the wall it's touching, airborne, falling) -- as opposed to merely
+## brushing a wall in passing. Drives the slower fall-speed clamp and the
+## wall-slide read on the animation.
+var _is_wall_sliding := false
+## Sign of the last touched wall's outward normal (+1 = wall on the left,
+## -1 = wall on the right) -- kept even after leaving the wall so
+## wall_coyote_time still knows which way to jump away from.
+var _wall_normal_x := 0.0
+var _wall_coyote_timer := 0.0
+var _wall_jump_timer := 0.0
+var _wall_jump_velocity_x := 0.0
 
 var _is_dashing := false
 var _dash_sound_index := 0
@@ -198,6 +247,10 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
+	if not _is_dead and global_position.y > death_y:
+		death_reason = "fell_off_map"
+		_die()
+
 	_attack_cooldown_timer = max(_attack_cooldown_timer - delta, 0.0)
 	_dash_cooldown_timer = max(_dash_cooldown_timer - delta, 0.0)
 	_update_parry_regen(delta)
@@ -206,6 +259,7 @@ func _physics_process(delta: float) -> void:
 	if _is_dead:
 		velocity = Vector2.ZERO
 		move_and_slide()
+		_resolve_character_stacking()
 		return
 
 	if _is_dashing:
@@ -213,10 +267,13 @@ func _physics_process(delta: float) -> void:
 		return
 
 	# Read before move_and_slide() runs this frame -- represents whether we
-	# were grounded going INTO this tick, which is what jump/gravity below
-	# need to reason about (move_and_slide() below will overwrite is_on_floor()
-	# with this frame's result, used afterward for landing detection).
+	# were grounded/on-a-wall going INTO this tick, which is what jump/gravity
+	# below need to reason about (move_and_slide() below will overwrite
+	# is_on_floor()/is_on_wall() with this frame's result, used afterward for
+	# landing detection).
 	var was_on_floor := is_on_floor()
+	var was_on_wall := is_on_wall()
+	var wall_normal := get_wall_normal()
 
 	if _is_attacking:
 		_update_attack_active_window(delta)
@@ -232,6 +289,23 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("attack"):
 		_on_attack_pressed()
 
+	# Wall-slide: airborne, touching a wall, and actively holding into it --
+	# holding away (or neutral) just lets you brush past/fall normally, only
+	# pressing in clings. was_on_wall already implies not-on-floor is
+	# irrelevant to check separately since a body resting in a floor+wall
+	# corner reports is_on_floor() true and skips this via the was_on_floor
+	# check below.
+	if was_on_wall:
+		_wall_normal_x = wall_normal.x
+	var pressing_into_wall: bool = was_on_wall and move_input != 0.0 \
+		and signf(move_input) == -signf(wall_normal.x)
+	_is_wall_sliding = not was_on_floor and pressing_into_wall and velocity.y >= 0.0
+
+	if was_on_wall and not was_on_floor:
+		_wall_coyote_timer = wall_coyote_time
+	else:
+		_wall_coyote_timer = maxf(_wall_coyote_timer - delta, 0.0)
+
 	if was_on_floor:
 		_coyote_timer = coyote_time
 	else:
@@ -242,19 +316,43 @@ func _physics_process(delta: float) -> void:
 	else:
 		_jump_buffer_timer = maxf(_jump_buffer_timer - delta, 0.0)
 
-	if _jump_buffer_timer > 0.0 and _coyote_timer > 0.0 and not _is_attacking:
+	# Wall jump takes priority over a ground jump when both happen to be
+	# available (e.g. stepping off a ledge right next to a wall) -- it's the
+	# more specific context. Consumes both grace timers so you can't chain a
+	# wall jump straight into a "free" floor-coyote jump on the same press.
+	if _jump_buffer_timer > 0.0 and _wall_coyote_timer > 0.0 and not _is_attacking:
+		_start_wall_jump()
+		_jump_buffer_timer = 0.0
+		_wall_coyote_timer = 0.0
+		_coyote_timer = 0.0
+	elif _jump_buffer_timer > 0.0 and _coyote_timer > 0.0 and not _is_attacking:
 		_start_jump()
 		_jump_buffer_timer = 0.0
 		_coyote_timer = 0.0
 
 	if was_on_floor and velocity.y >= 0.0:
 		velocity.y = 0.0
+	elif _is_wall_sliding:
+		velocity.y = minf(velocity.y + jump_gravity * delta, wall_slide_speed)
 	else:
 		velocity.y = minf(velocity.y + jump_gravity * delta, max_fall_speed)
 
-	velocity.x = 0.0 if _is_attacking else move_input * move_speed
+	if _wall_jump_timer > 0.0:
+		_wall_jump_timer = maxf(_wall_jump_timer - delta, 0.0)
+		velocity.x = _wall_jump_velocity_x
+	elif _stack_unstick_timer > 0.0:
+		_stack_unstick_timer = maxf(_stack_unstick_timer - delta, 0.0)
+		velocity.x = _stack_unstick_velocity_x
+	elif _knockback_timer > 0.0:
+		_knockback_timer = maxf(_knockback_timer - delta, 0.0)
+		velocity.x = _knockback_velocity_x
+	elif _is_wall_sliding:
+		velocity.x = 0.0
+	else:
+		velocity.x = 0.0 if _is_attacking else move_input * move_speed
 
 	move_and_slide()
+	_resolve_character_stacking()
 
 	if _jump_active:
 		_jump_min_y = minf(_jump_min_y, global_position.y)
@@ -265,6 +363,29 @@ func _physics_process(delta: float) -> void:
 		_update_movement_animation(move_input)
 
 	_update_camera_lead(delta, move_input)
+
+
+## Two CharacterBody2Ds landing exactly on top of one another can settle into
+## a stable balance point and just sit there stuck -- neither is a floor the
+## other should be able to rest on indefinitely. Detect it via the landing
+## collision normal and arm a short unstick override (applied next frame,
+## see _physics_process) so the top body slides off instead of hanging
+## there. Armed as a timed override rather than pushed immediately here,
+## because landing on someone's head usually also means being in their
+## melee range -- an immediate one-frame nudge just gets zeroed right back
+## out by the "_is_attacking -> velocity.x = 0" branch next frame.
+func _resolve_character_stacking() -> void:
+	for i in range(get_slide_collision_count()):
+		var collision := get_slide_collision(i)
+		var collider := collision.get_collider()
+		if not (collider is CharacterBody2D) or collision.get_normal().y > -0.5:
+			continue
+		var push_dir := signf(global_position.x - collider.global_position.x)
+		if push_dir == 0.0:
+			push_dir = 1.0
+		_stack_unstick_timer = STACK_UNSTICK_DURATION
+		_stack_unstick_velocity_x = push_dir * stack_push_speed
+		return
 
 
 func _update_parry_regen(delta: float) -> void:
@@ -287,13 +408,11 @@ func _update_camera_lead(delta: float, move_input: float) -> void:
 	camera.position = CAMERA_BASE_OFFSET + Vector2(_camera_lead_x, 0.0)
 
 
+## Air attacks are allowed -- _update_movement_animation only runs when
+## not _is_attacking, so the attack animation is never fought over by the
+## jump/fall animation the way the old cosmetic-hop system used to.
 func _on_attack_pressed() -> void:
-	# Attacking while jumping is what caused the freeze bug: the attack
-	# animation would get fought over every frame by _update_jump forcing
-	# "jump"/"fall" back on, so the attack anim never finished and
-	# _is_attacking never cleared. Blocked outright for now, not just as a
-	# workaround -- attacking mid-air isn't a mechanic we've designed yet.
-	if _is_attacking or not is_on_floor() or _attack_cooldown_timer > 0.0:
+	if _is_attacking or _attack_cooldown_timer > 0.0:
 		return
 	_attack_cooldown_timer = attack_speed
 	_start_attack()
@@ -340,12 +459,10 @@ func _make_hitbox() -> Area2D:
 	area.monitoring = true
 	area.monitorable = false
 	var shape := CollisionShape2D.new()
-	var rect := RectangleShape2D.new()
-	rect.size = Vector2(strike_range, HITBOX_HEIGHT)
-	shape.shape = rect
-	shape.position = Vector2(strike_range / 2.0, 0.0)
+	shape.shape = RectangleShape2D.new()
 	area.add_child(shape)
 	call_deferred("add_child", area)
+	call_deferred("_resize_hitbox_shape")
 	return area
 
 
@@ -353,14 +470,30 @@ func _update_hitbox_facing() -> void:
 	hitbox.scale.x = -1.0 if sprite.flip_h else 1.0
 
 
+## Sizes/positions the hitbox from strike_range/HITBOX_HEIGHT scaled by the
+## sprite's own current scale -- the hitbox is a sibling of AnimatedSprite2D
+## (child of the CharacterBody2D root), not a child of it, so it does NOT
+## automatically inherit sprite.scale the way it would if the whole root
+## were scaled instead. Without this, bumping the sprite's scale up to make
+## the character look bigger silently leaves the real hit/parry reach at
+## the old (now visually undersized) raw pixel value -- swings that look
+## like they connect on screen just don't, because the actual Area2D never
+## reaches that far.
+func _resize_hitbox_shape() -> void:
+	var shape: CollisionShape2D = hitbox.get_child(0)
+	var rect: RectangleShape2D = shape.shape
+	var scaled_range := strike_range * sprite.scale.x
+	var scaled_height := HITBOX_HEIGHT * sprite.scale.y
+	rect.size = Vector2(scaled_range, scaled_height)
+	shape.position = Vector2(scaled_range / 2.0, 0.0)
+
+
 ## Live-resizes the hitbox shape -- setting strike_range directly would not
 ## touch the already-built CollisionShape2D, so callers who need the change
 ## to actually take effect (e.g. the admin panel) must go through this.
 func set_strike_range(value: float) -> void:
 	strike_range = value
-	var shape: CollisionShape2D = hitbox.get_child(0)
-	shape.shape.size = Vector2(strike_range, HITBOX_HEIGHT)
-	shape.position = Vector2(strike_range / 2.0, 0.0)
+	_resize_hitbox_shape()
 
 
 ## Also refills current_hp to the new max -- convenient for live-tuning
@@ -414,7 +547,10 @@ func _apply_parry_success(enemy: Node, frames_late: float) -> void:
 
 	var tier := _parry_tier(frames_late)
 	last_parry_result = tier
-	var knockback: float = maxf(15.0, 80.0 - (frames_late / 10.0) * 65.0)
+	## Trimmed down from the old 15-80px range -- with real gravity now in
+	## play, that used to be able to shove the player clean off a platform
+	## edge, which read as far more violent than the old free-move version.
+	var knockback: float = maxf(12.0, 55.0 - (frames_late / 10.0) * 40.0)
 
 	parry_charges = maxi(parry_charges - PARRY_CHARGE_COST[tier], 0)
 	parries_count += 1
@@ -481,11 +617,16 @@ func _update_streak_visual() -> void:
 	sprite.modulate = STREAK_GLOW_COLOR if _next_hit_bonus else Color.WHITE
 
 
+## Horizontal-only, and driven through velocity + move_and_slide (not a
+## position tween) so it stops at walls/ledges like any other movement
+## instead of teleporting through geometry -- see _physics_process, which
+## substitutes _knockback_velocity_x for input while _knockback_timer > 0.
 func _knockback_away_from(source_pos: Vector2, distance: float) -> void:
-	var dir: Vector2 = global_position - source_pos
-	dir = dir.normalized() if dir != Vector2.ZERO else (Vector2.LEFT if sprite.flip_h else Vector2.RIGHT)
-	var target := global_position + dir * distance
-	create_tween().tween_property(self, "global_position", target, 0.1)
+	var dir_x := signf(global_position.x - source_pos.x)
+	if dir_x == 0.0:
+		dir_x = -1.0 if sprite.flip_h else 1.0
+	_knockback_velocity_x = dir_x * (distance / KNOCKBACK_DURATION)
+	_knockback_timer = KNOCKBACK_DURATION
 
 
 func _spawn_parry_spark(tier: String, at_position: Vector2) -> void:
@@ -529,7 +670,11 @@ func _play_sfx(player: AudioStreamPlayer, stream: AudioStream) -> void:
 
 
 func _update_movement_animation(move_input: float) -> void:
-	if move_input != 0.0:
+	# Skipped during the wall-jump control lock -- otherwise, still holding
+	# into the wall you just pushed off from would immediately flip facing
+	# back toward it, visually contradicting a jump that's actually carrying
+	# you the other way (_start_wall_jump already set the correct facing).
+	if move_input != 0.0 and _wall_jump_timer <= 0.0:
 		sprite.flip_h = move_input < 0.0
 
 	if not is_on_floor():
@@ -659,6 +804,28 @@ func get_dash_cooldown() -> float:
 ## can actually clear an NPC instead of bouncing off them mid-air.
 func _start_jump() -> void:
 	velocity.y = -jump_velocity
+	_jump_active = true
+	_jump_start_y = global_position.y
+	_jump_min_y = global_position.y
+	_enter_phase()
+	sprite.play("jump")
+	if sfx_walk.playing:
+		sfx_walk.stop()
+
+
+## Diagonal push-off, away from whichever wall was last touched -- a full
+## velocity reset (not additive), so it always reads the same regardless of
+## how fast you were already sliding down. Shares the jump-telemetry/
+## enemy-phase machinery with a normal jump (_jump_active et al.) since it's
+## still fundamentally "airborne from an intentional jump input", just off
+## a wall instead of the floor.
+func _start_wall_jump() -> void:
+	var away_dir := signf(_wall_normal_x) if _wall_normal_x != 0.0 else (1.0 if sprite.flip_h else -1.0)
+	velocity = Vector2(away_dir * wall_jump_speed_x, -wall_jump_speed_y)
+	_wall_jump_velocity_x = velocity.x
+	_wall_jump_timer = wall_jump_control_lock
+	_is_wall_sliding = false
+	sprite.flip_h = away_dir < 0.0
 	_jump_active = true
 	_jump_start_y = global_position.y
 	_jump_min_y = global_position.y
