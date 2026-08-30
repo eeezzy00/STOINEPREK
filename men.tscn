@@ -120,7 +120,7 @@ text = "BETA 0.01"
 
 [node name="Runner" type="AnimatedSprite2D" parent="CanvasLayer/UI" unique_id=1012294124]
 modulate = Color(0.878, 0.251, 0.984, 1)
-position = Vector2(874, 238)
+position = Vector2(760.99994, 317)
 scale = Vector2(9.199999, 9.41)
 sprite_frames = SubResource("frames_menu_runner")
 animation = &"run"

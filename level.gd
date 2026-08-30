@@ -82,6 +82,8 @@ const FLASH_TEXT_COLOR := Color(1, 0.85, 0.95, 1)
 var _enemies_alive := 0
 var _victory_shown := false
 var _defeat_shown := false
+## Non-null only while the pause overlay is up -- see _toggle_pause.
+var _pause_canvas: CanvasLayer = null
 
 
 func _ready() -> void:
@@ -97,6 +99,23 @@ func _ready() -> void:
 	_setup_enemies()
 	_setup_player()
 	_play_level_audio()
+
+
+## Blocked while the admin panel is open (its own F5 toggle already freezes
+## gameplay a different way, see AdminPanel.panel_open) and once the
+## victory/death screen is already showing -- pausing over "YOU DIED" would
+## just stack UI for no reason.
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and not _victory_shown and not _defeat_shown \
+			and not AdminPanel.panel_open:
+		_toggle_pause()
+
+
+func _toggle_pause() -> void:
+	if _pause_canvas:
+		_resume_from_pause()
+	else:
+		_show_pause_screen()
 
 
 ## Real floor for real gravity: level3+ paint their own tile collision, but
@@ -271,6 +290,68 @@ func _show_death_screen() -> void:
 	quit_btn.pressed.connect(func(): get_tree().change_scene_to_file("res://men.tscn"))
 
 	_show_end_screen("YOU DIED", DEATH_COLOR, term_font, [restart_btn, quit_btn])
+
+
+## process_mode = ALWAYS on the canvas propagates to its children (their own
+## mode is the default INHERIT) -- without it, get_tree().paused = true below
+## would freeze the RESUME/QUIT buttons right along with the rest of the
+## game, and there'd be no way to un-pause.
+func _show_pause_screen() -> void:
+	var term_font := _make_term_font()
+
+	var resume_btn := _make_victory_button("RESUME", term_font)
+	resume_btn.pressed.connect(_resume_from_pause)
+
+	var quit_btn := _make_victory_button("QUIT TO MENU", term_font)
+	quit_btn.pressed.connect(func():
+		_resume_from_pause()
+		get_tree().change_scene_to_file("res://men.tscn"))
+
+	_pause_canvas = CanvasLayer.new()
+	_pause_canvas.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_pause_canvas)
+
+	var dim := ColorRect.new()
+	dim.color = Color(0.02, 0.01, 0.03, 0.82)
+	dim.anchor_right = 1.0
+	dim.anchor_bottom = 1.0
+	_pause_canvas.add_child(dim)
+
+	var title := Label.new()
+	title.text = "PAUSED"
+	title.anchor_right = 1.0
+	title.anchor_top = 0.28
+	title.anchor_bottom = 0.42
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	title.add_theme_font_override("font", term_font)
+	title.add_theme_font_size_override("font_size", 44)
+	title.add_theme_color_override("font_color", ACCENT_COLOR)
+	_pause_canvas.add_child(title)
+
+	var vbox := VBoxContainer.new()
+	vbox.anchor_left = 0.5
+	vbox.anchor_right = 0.5
+	vbox.anchor_top = 0.5
+	vbox.anchor_bottom = 0.5
+	vbox.offset_left = -110.0
+	vbox.offset_right = 110.0
+	vbox.offset_top = -30.0
+	vbox.add_theme_constant_override("separation", 16)
+	_pause_canvas.add_child(vbox)
+
+	vbox.add_child(resume_btn)
+	vbox.add_child(quit_btn)
+	resume_btn.grab_focus()
+
+	get_tree().paused = true
+
+
+func _resume_from_pause() -> void:
+	get_tree().paused = false
+	if _pause_canvas:
+		_pause_canvas.queue_free()
+		_pause_canvas = null
 
 
 func _make_term_font() -> Font:

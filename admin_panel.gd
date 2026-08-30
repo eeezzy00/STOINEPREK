@@ -65,6 +65,10 @@ var PLAYER_SLIDERS := [
 	{"key": "wall_jump_speed_y", "label": "Отпрыг от стены Y, px/s", "min": 100.0, "max": 700.0, "step": 10.0, "default": 420.0},
 	{"key": "wall_jump_control_lock", "label": "Блок управления после отпрыга, сек", "min": 0.0, "max": 0.5, "step": 0.01, "default": 0.15},
 	{"key": "wall_coyote_time", "label": "Coyote time у стены, сек", "min": 0.0, "max": 0.3, "step": 0.01, "default": 0.1},
+	{"key": "attack_active_duration", "label": "Окно попадания удара, сек", "min": 0.02, "max": 0.4, "step": 0.01, "default": 0.12},
+	{"key": "sweet_spot_ratio", "label": "Доля окна = sweet spot", "min": 0.05, "max": 1.0, "step": 0.05, "default": 0.35},
+	{"key": "sweet_spot_damage_multiplier", "label": "Множитель урона sweet spot", "min": 1.0, "max": 3.0, "step": 0.1, "default": 1.5},
+	{"key": "late_hit_damage_multiplier", "label": "Множитель урона поздний хит", "min": 0.1, "max": 1.0, "step": 0.05, "default": 0.75},
 ]
 
 ## "cat" is "combat" or "ai" -- splits this one list across the two NPC tabs
@@ -77,6 +81,11 @@ var NPC_SLIDERS := [
 	{"key": "attack_cooldown", "label": "Кулдаун атаки, сек", "min": 0.2, "max": 3.0, "step": 0.1, "default": 1.1, "cat": "combat"},
 	{"key": "attack_startup", "label": "Замах перед ударом, сек", "min": 0.05, "max": 0.6, "step": 0.05, "default": 0.15, "cat": "combat"},
 	{"key": "attack_range", "label": "Дальность удара, px", "min": 20.0, "max": 150.0, "step": 5.0, "default": 46.0, "cat": "combat"},
+	{"key": "parry_stun_duration", "label": "Стан после парирования, сек", "min": 0.1, "max": 2.0, "step": 0.05, "default": 0.55, "cat": "combat"},
+	{"key": "attack_active_duration", "label": "Окно попадания удара, сек", "min": 0.02, "max": 0.4, "step": 0.01, "default": 0.12, "cat": "combat"},
+	{"key": "sweet_spot_ratio", "label": "Доля окна = sweet spot", "min": 0.05, "max": 1.0, "step": 0.05, "default": 0.35, "cat": "combat"},
+	{"key": "sweet_spot_damage_multiplier", "label": "Множитель урона sweet spot", "min": 1.0, "max": 3.0, "step": 0.1, "default": 1.5, "cat": "combat"},
+	{"key": "late_hit_damage_multiplier", "label": "Множитель урона поздний хит", "min": 0.1, "max": 1.0, "step": 0.05, "default": 0.75, "cat": "combat"},
 	{"key": "dodge_chance", "label": "Шанс защитного уворота (при угрозе)", "min": 0.0, "max": 1.0, "step": 0.05, "default": 0.35, "cat": "combat"},
 	{"key": "dodge_distance", "label": "Дистанция уворота, px", "min": 10.0, "max": 150.0, "step": 5.0, "default": 60.0, "cat": "combat"},
 	{"key": "dodge_duration", "label": "Длительность уворота, сек", "min": 0.05, "max": 0.5, "step": 0.05, "default": 0.15, "cat": "combat"},

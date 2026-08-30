@@ -31,6 +31,23 @@ extends CharacterBody2D
 ## Seconds a jump press before actually landing is still remembered and
 ## fires the instant you touch down, instead of being silently dropped.
 @export var jump_buffer_time: float = 0.1
+## Fraction of upward velocity kept when the jump button is released while
+## still rising -- a quick tap yields a short hop, a held press reaches full
+## height (Mario/Celeste-style variable jump height). Applies to wall jumps
+## too since both share _jump_active.
+@export var jump_cut_multiplier: float = 0.45
+
+@export_group("Movement")
+## How fast velocity.x ramps toward move_speed while grounded with input held
+## (px/s^2). Kept high (reaches top speed in well under a tenth of a second)
+## for a snappy, Celeste-like feel rather than a gradual run-up.
+@export var ground_acceleration: float = 3200.0
+## How fast velocity.x decays to zero while grounded with no input (px/s^2).
+@export var ground_friction: float = 4000.0
+## Same as above but airborne -- slightly looser than on the ground so a
+## jump's arc still feels committed instead of fully steerable mid-air.
+@export var air_acceleration: float = 1800.0
+@export var air_friction: float = 1400.0
 
 @export_group("Wall Movement")
 ## Downward speed clamp while actively sliding down a wall -- much slower
@@ -49,17 +66,51 @@ extends CharacterBody2D
 ## Grace window (like coyote_time, but for walls) after leaving a wall
 ## during which a jump input still counts as a wall jump.
 @export var wall_coyote_time: float = 0.1
+## Consecutive wall jumps allowed before a floor landing resets the count --
+## without this cap the player could ping-pong straight up between two
+## facing walls indefinitely.
+@export var max_wall_jump_chain: int = 2
 
 @export_group("Dash")
 @export var dash_duration: float = 0.2
 @export var dash_distance: float = 60.0
 @export var dash_cooldown: float = 2.0
 @export var double_tap_window: float = 0.3
+## Fraction of dash_duration that must have elapsed before an attack press
+## cancels the dash early into a lunging strike -- see _update_dash(). Below
+## this point an attack press during a dash is still just dropped, same as
+## before this existed.
+@export var dash_attack_cancel_ratio: float = 0.6
 
 @export_group("Feel")
 ## Light freeze-frame on every normal landed hit (not just parries), shared
 ## by both the player's own swings and the enemy's -- see request_hitstop().
 @export var normal_hit_hitstop_frames: float = 2.0
+## Sprite scale multiplier applied for an instant on a hard landing, then
+## sprung back to normal over landing_squash_duration.
+@export var landing_squash_scale: Vector2 = Vector2(1.25, 0.75)
+@export var landing_squash_duration: float = 0.12
+## How far (px) the camera dips on a hard landing, decaying back to zero at
+## the same kind of exponential smoothing as camera_lead_rate.
+@export var landing_dip_amount: float = 8.0
+@export var landing_dip_recover_rate: float = 8.0
+## Fall speed (px/s) a landing must exceed before squash/dust/dip trigger --
+## keeps small hops and step-downs from looking exaggerated.
+@export var landing_min_fall_speed: float = 250.0
+
+@export_group("Hit Zones")
+## How long (seconds) the melee hitbox keeps checking for a target after
+## attack_startup elapses -- used to be a single instant, so a target not
+## overlapping on that one exact frame made the whole swing whiff for its
+## entire duration. Extending it into a real window means the swing keeps
+## trying until it lands or the window closes.
+@export var attack_active_duration: float = 0.12
+## Fraction of attack_active_duration counted as the sweet spot -- landing
+## the hit within this slice of the window (from the moment it opens) deals
+## bonus damage; landing it later in the window deals reduced damage.
+@export var sweet_spot_ratio: float = 0.35
+@export var sweet_spot_damage_multiplier: float = 1.5
+@export var late_hit_damage_multiplier: float = 0.75
 
 @export_group("Parry")
 ## Time after an attack starts before its hitbox actually goes "active" --
@@ -152,6 +203,7 @@ signal parried
 @onready var hp_fill: ColorRect = $HealthBar/Fill
 @onready var camera: Camera2D = $Camera2D
 @onready var dash_smoke: CPUParticles2D = _make_dash_smoke()
+@onready var landing_dust: CPUParticles2D = _make_landing_dust()
 @onready var spark_particles: CPUParticles2D = _make_spark_particles()
 @onready var hitbox: Area2D = _make_hitbox()
 @onready var sfx_attack: AudioStreamPlayer = _make_sfx_player()
@@ -160,6 +212,8 @@ signal parried
 @onready var sfx_walk: AudioStreamPlayer = _make_sfx_player()
 
 var _camera_lead_x := 0.0
+var _camera_dip_y := 0.0
+var _squash_tween: Tween
 
 var current_hp: float
 var _hp_bar_full_width: float
@@ -206,6 +260,9 @@ var _wall_normal_x := 0.0
 var _wall_coyote_timer := 0.0
 var _wall_jump_timer := 0.0
 var _wall_jump_velocity_x := 0.0
+## Reset on every floor landing (see _physics_process) -- caps how many wall
+## jumps in a row are allowed before touching ground again.
+var _wall_jump_chain_count := 0
 
 var _is_dashing := false
 var _dash_sound_index := 0
@@ -226,6 +283,43 @@ var _time_scale_before_hitstop := 1.0
 ## (nothing stops jumping mid-dash or vice versa), and whichever one ends
 ## first must not restore collision while the other is still active.
 var _phase_depth := 0
+
+
+#region State Machine
+## Formal record of "what is the character doing" -- introduced specifically
+## to make character-action-style cancels (e.g. dash -> attack, see
+## _update_dash) an explicit, declared rule instead of an implicit gap in
+## whatever booleans happen to be set. This does NOT replace the existing
+## _is_attacking/_is_dashing/etc. flags (removing those would break the
+## get()/set() reflection admin_panel.gd, debug_hud.gd and samurai_npc.gd
+## already rely on) -- it runs alongside them as the single source of truth
+## for "can action X legally interrupt what's happening right now".
+enum PlayerState { GROUNDED, AIRBORNE, WALL_SLIDE, DASH, ATTACKING, HURT, DEAD }
+
+## Which states each state may transition into. Mostly codifies what the
+## game already permitted implicitly (e.g. attacking mid-air always worked);
+## the one new rule this unlocks is DASH -> ATTACKING (see
+## dash_attack_cancel_ratio).
+const TRANSITIONS := {
+	PlayerState.GROUNDED: [PlayerState.AIRBORNE, PlayerState.WALL_SLIDE, PlayerState.DASH, PlayerState.ATTACKING, PlayerState.HURT, PlayerState.DEAD],
+	PlayerState.AIRBORNE: [PlayerState.GROUNDED, PlayerState.WALL_SLIDE, PlayerState.DASH, PlayerState.ATTACKING, PlayerState.HURT, PlayerState.DEAD],
+	PlayerState.WALL_SLIDE: [PlayerState.AIRBORNE, PlayerState.GROUNDED, PlayerState.ATTACKING, PlayerState.HURT, PlayerState.DEAD],
+	PlayerState.DASH: [PlayerState.GROUNDED, PlayerState.AIRBORNE, PlayerState.ATTACKING, PlayerState.HURT, PlayerState.DEAD],
+	PlayerState.ATTACKING: [PlayerState.GROUNDED, PlayerState.AIRBORNE, PlayerState.HURT, PlayerState.DEAD],
+	PlayerState.HURT: [PlayerState.GROUNDED, PlayerState.AIRBORNE, PlayerState.WALL_SLIDE, PlayerState.DASH, PlayerState.ATTACKING, PlayerState.DEAD],
+	PlayerState.DEAD: [],
+}
+
+var _state: PlayerState = PlayerState.GROUNDED
+
+
+func _can_transition(to: PlayerState) -> bool:
+	return to in TRANSITIONS.get(_state, [])
+
+
+func _enter_state(to: PlayerState) -> void:
+	_state = to
+#endregion
 
 
 func _ready() -> void:
@@ -301,6 +395,18 @@ func _physics_process(delta: float) -> void:
 		and signf(move_input) == -signf(wall_normal.x)
 	_is_wall_sliding = not was_on_floor and pressing_into_wall and velocity.y >= 0.0
 
+	# Ambient ground/air/wall-slide classification -- skipped while mid-swing
+	# so it doesn't stomp the ATTACKING state _start_attack() just entered
+	# this same frame (attacks are allowed mid-air/mid-slide and shouldn't
+	# get reclassified away just because the character is still airborne).
+	if not _is_attacking:
+		if was_on_floor:
+			_enter_state(PlayerState.GROUNDED)
+		elif _is_wall_sliding:
+			_enter_state(PlayerState.WALL_SLIDE)
+		else:
+			_enter_state(PlayerState.AIRBORNE)
+
 	if was_on_wall and not was_on_floor:
 		_wall_coyote_timer = wall_coyote_time
 	else:
@@ -320,7 +426,8 @@ func _physics_process(delta: float) -> void:
 	# available (e.g. stepping off a ledge right next to a wall) -- it's the
 	# more specific context. Consumes both grace timers so you can't chain a
 	# wall jump straight into a "free" floor-coyote jump on the same press.
-	if _jump_buffer_timer > 0.0 and _wall_coyote_timer > 0.0 and not _is_attacking:
+	if _jump_buffer_timer > 0.0 and _wall_coyote_timer > 0.0 and not _is_attacking \
+			and _wall_jump_chain_count < max_wall_jump_chain:
 		_start_wall_jump()
 		_jump_buffer_timer = 0.0
 		_wall_coyote_timer = 0.0
@@ -329,6 +436,11 @@ func _physics_process(delta: float) -> void:
 		_start_jump()
 		_jump_buffer_timer = 0.0
 		_coyote_timer = 0.0
+
+	# Short-hop: cut the rise short the instant jump is released, instead of
+	# always riding out the full jump_velocity arc.
+	if Input.is_action_just_released("jump") and _jump_active and velocity.y < 0.0:
+		velocity.y *= jump_cut_multiplier
 
 	if was_on_floor and velocity.y >= 0.0:
 		velocity.y = 0.0
@@ -348,8 +460,18 @@ func _physics_process(delta: float) -> void:
 		velocity.x = _knockback_velocity_x
 	elif _is_wall_sliding:
 		velocity.x = 0.0
+	elif _is_attacking:
+		velocity.x = 0.0
 	else:
-		velocity.x = 0.0 if _is_attacking else move_input * move_speed
+		var target_speed_x := move_input * move_speed
+		var rate: float
+		if was_on_floor:
+			rate = ground_acceleration if move_input != 0.0 else ground_friction
+		else:
+			rate = air_acceleration if move_input != 0.0 else air_friction
+		velocity.x = move_toward(velocity.x, target_speed_x, rate * delta)
+
+	var fall_speed_before_slide := velocity.y
 
 	move_and_slide()
 	_resolve_character_stacking()
@@ -357,7 +479,10 @@ func _physics_process(delta: float) -> void:
 	if _jump_active:
 		_jump_min_y = minf(_jump_min_y, global_position.y)
 	if not was_on_floor and is_on_floor():
+		_wall_jump_chain_count = 0
 		_on_landed()
+		if fall_speed_before_slide >= landing_min_fall_speed:
+			_play_landing_impact(fall_speed_before_slide)
 
 	if not _is_attacking:
 		_update_movement_animation(move_input)
@@ -405,7 +530,11 @@ func _update_camera_lead(delta: float, move_input: float) -> void:
 			target_lead = -camera_look_ahead
 	var t: float = 1.0 - exp(-camera_lead_rate * delta)
 	_camera_lead_x = lerp(_camera_lead_x, target_lead, t)
-	camera.position = CAMERA_BASE_OFFSET + Vector2(_camera_lead_x, 0.0)
+
+	var dip_t: float = 1.0 - exp(-landing_dip_recover_rate * delta)
+	_camera_dip_y = lerp(_camera_dip_y, 0.0, dip_t)
+
+	camera.position = CAMERA_BASE_OFFSET + Vector2(_camera_lead_x, _camera_dip_y)
 
 
 ## Air attacks are allowed -- _update_movement_animation only runs when
@@ -419,6 +548,7 @@ func _on_attack_pressed() -> void:
 
 
 func _start_attack() -> void:
+	_enter_state(PlayerState.ATTACKING)
 	_is_attacking = true
 	_attack_elapsed = 0.0
 	_attack_hit_resolved = false
@@ -430,23 +560,46 @@ func _start_attack() -> void:
 		sfx_walk.stop()
 
 
-## Hit registration happens here, once, the instant the swing's hitbox goes
-## "active" (attack_startup elapsed) -- not at the moment of the click.
+## Hit registration checks every frame once the swing's hitbox goes "active"
+## (attack_startup elapsed), not just once at that first instant -- see
+## _resolve_attack_hit. Keeps trying until something resolves or
+## attack_active_duration runs out, at which point it's a confirmed total
+## whiff (see _log_total_whiff).
 func _update_attack_active_window(delta: float) -> void:
 	if _attack_hit_resolved:
 		return
 	_attack_elapsed += delta
-	if _attack_elapsed >= attack_startup:
+	if _attack_elapsed < attack_startup:
+		return
+	var active_elapsed := _attack_elapsed - attack_startup
+	if _resolve_attack_hit(active_elapsed):
 		_attack_hit_resolved = true
-		_resolve_attack_hit()
+	elif active_elapsed >= attack_active_duration:
+		_attack_hit_resolved = true
+		_log_total_whiff()
 
 
-func _resolve_attack_hit() -> void:
+## Returns true once this swing has actually resolved against something --
+## either a parry clash or a landed/attempted normal hit -- false means
+## "nobody in range yet, keep the window open and try again next frame".
+func _resolve_attack_hit(active_elapsed: float) -> bool:
 	var enemy := _find_active_attacking_enemy()
 	if enemy != null:
 		_resolve_parry_attempt(enemy)
-	else:
-		_try_hit_enemies()
+		return true
+	return _try_hit_enemies(active_elapsed)
+
+
+## Called only when the active window closes with nobody ever found in the
+## hitbox -- previously logged inline in _try_hit_enemies on the single
+## instant that used to exist.
+func _log_total_whiff() -> void:
+	var nearest_distance := INF
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if is_instance_valid(enemy):
+			nearest_distance = minf(nearest_distance, global_position.distance_to(enemy.global_position))
+	if nearest_distance < INF:
+		TelemetryLogger.log_attack("FORWARD", nearest_distance, false)
 
 
 ## Forward-only melee hitbox: a rectangle in front of the character, flipped
@@ -505,11 +658,20 @@ func set_max_hp(value: float) -> void:
 	hp_fill.size.x = _hp_bar_full_width
 
 
+## A hit only counts as a parry-eligible clash if the enemy's OWN swing could
+## actually reach us -- not just "some enemy somewhere is mid-animation".
+## Without the enemy_hitbox overlap check, attacking an enemy that's mid-swing
+## but facing away (e.g. right after dashing past/behind them) would hijack a
+## clean hit into a parry attempt -- one that then fails (we weren't timing a
+## parry), silently dealing zero damage instead of landing normally.
 func _find_active_attacking_enemy() -> Node:
 	for body in hitbox.get_overlapping_bodies():
 		if not is_instance_valid(body):
 			continue
 		if body.get("_is_attacking") != true:
+			continue
+		var enemy_hitbox: Area2D = body.get("hitbox")
+		if enemy_hitbox == null or not enemy_hitbox.get_overlapping_bodies().has(self):
 			continue
 		return body
 	return null
@@ -543,6 +705,7 @@ func _apply_parry_success(enemy: Node, frames_late: float) -> void:
 	# The swing's own "attack"/"attack2" animation gets pre-empted by the
 	# hurt_flash below, so it will never fire animation_finished itself --
 	# do the cleanup _on_animation_finished would otherwise have done.
+	_enter_state(PlayerState.HURT)
 	_is_attacking = false
 
 	var tier := _parry_tier(frames_late)
@@ -580,6 +743,7 @@ func _apply_parry_success(enemy: Node, frames_late: float) -> void:
 
 
 func _apply_parry_fail() -> void:
+	_enter_state(PlayerState.HURT)
 	_is_attacking = false
 
 	last_parry_result = "MISS"
@@ -698,6 +862,7 @@ func _update_movement_animation(move_input: float) -> void:
 		sfx_walk.stop()
 
 
+#region Dash
 func _can_dash() -> bool:
 	return not _is_dashing and not _is_attacking and not _is_dead and _dash_cooldown_timer <= 0.0
 
@@ -715,6 +880,7 @@ func _check_double_tap_dash(_move_input: float) -> void:
 ## momentum is held at zero for the whole dash, see _update_dash.
 func _start_dash(dir_x: float) -> void:
 	var dir := signf(dir_x) if dir_x != 0.0 else (-1.0 if sprite.flip_h else 1.0)
+	_enter_state(PlayerState.DASH)
 	_is_dashing = true
 	_dash_timer = 0.0
 	_dash_cooldown_timer = dash_cooldown
@@ -743,6 +909,19 @@ func _update_dash(delta: float) -> void:
 		_spawn_afterimage()
 		_afterimage_timer = 0.0
 		_afterimage_count += 1
+
+	# Dash-cancel-into-attack: once far enough into the dash's arc (see
+	# dash_attack_cancel_ratio), an attack press cuts it short into a lunging
+	# strike instead of being dropped for the rest of the dash's duration --
+	# the one new character-action cancel the state machine exists to allow.
+	var cancel_window_open := _dash_timer >= dash_duration * dash_attack_cancel_ratio
+	if cancel_window_open and _attack_cooldown_timer <= 0.0 \
+			and Input.is_action_just_pressed("attack") and _can_transition(PlayerState.ATTACKING):
+		_is_dashing = false
+		_exit_phase()
+		_attack_cooldown_timer = attack_speed
+		_start_attack()
+		return
 
 	if _dash_timer >= dash_duration:
 		_is_dashing = false
@@ -793,6 +972,50 @@ func _make_dash_smoke() -> CPUParticles2D:
 	p.color = Color(0.08, 0.06, 0.1, 0.85)
 	call_deferred("add_child", p)
 	return p
+#endregion
+
+
+## Squash-stretch, dust puff, and a camera dip on a hard landing -- purely
+## cosmetic feedback, gated by landing_min_fall_speed so ordinary step-downs
+## don't trigger it. intensity scales 0..1 with fall speed relative to
+## max_fall_speed, so a fast fall reads as a heavier impact than a shallow one.
+func _play_landing_impact(fall_speed: float) -> void:
+	var intensity := clampf(fall_speed / max_fall_speed, 0.0, 1.0)
+
+	var base_scale := sprite.scale
+	var squash := Vector2(1.0, 1.0).lerp(landing_squash_scale, intensity)
+	sprite.scale = Vector2(base_scale.x * squash.x, base_scale.y * squash.y)
+	if _squash_tween and _squash_tween.is_valid():
+		_squash_tween.kill()
+	_squash_tween = create_tween()
+	_squash_tween.tween_property(sprite, "scale", base_scale, landing_squash_duration) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+
+	landing_dust.global_position = global_position
+	landing_dust.amount = roundi(lerp(6.0, 16.0, intensity))
+	landing_dust.restart()
+	landing_dust.emitting = true
+
+	_camera_dip_y = landing_dip_amount * intensity
+
+
+func _make_landing_dust() -> CPUParticles2D:
+	var p := CPUParticles2D.new()
+	p.emitting = false
+	p.one_shot = true
+	p.amount = 10
+	p.lifetime = 0.3
+	p.explosiveness = 1.0
+	p.direction = Vector2(0, -1)
+	p.spread = 50.0
+	p.initial_velocity_min = 40.0
+	p.initial_velocity_max = 120.0
+	p.gravity = Vector2(0, 260)
+	p.scale_amount_min = 2.0
+	p.scale_amount_max = 4.0
+	p.color = Color(0.55, 0.5, 0.55, 0.7)
+	call_deferred("add_child", p)
+	return p
 
 
 func get_dash_cooldown() -> float:
@@ -802,7 +1025,9 @@ func get_dash_cooldown() -> float:
 ## enter_phase() drops enemy collision for the whole time we're airborne (see
 ## _on_landed for the matching exit) -- same trick the dash uses -- so a jump
 ## can actually clear an NPC instead of bouncing off them mid-air.
+#region Jump and Wall Jump
 func _start_jump() -> void:
+	_enter_state(PlayerState.AIRBORNE)
 	velocity.y = -jump_velocity
 	_jump_active = true
 	_jump_start_y = global_position.y
@@ -821,9 +1046,11 @@ func _start_jump() -> void:
 ## a wall instead of the floor.
 func _start_wall_jump() -> void:
 	var away_dir := signf(_wall_normal_x) if _wall_normal_x != 0.0 else (1.0 if sprite.flip_h else -1.0)
+	_enter_state(PlayerState.AIRBORNE)
 	velocity = Vector2(away_dir * wall_jump_speed_x, -wall_jump_speed_y)
 	_wall_jump_velocity_x = velocity.x
 	_wall_jump_timer = wall_jump_control_lock
+	_wall_jump_chain_count += 1
 	_is_wall_sliding = false
 	sprite.flip_h = away_dir < 0.0
 	_jump_active = true
@@ -844,6 +1071,7 @@ func _on_landed() -> void:
 	_jump_active = false
 	_exit_phase()
 	TelemetryLogger.log_jump(_jump_start_y - _jump_min_y)
+#endregion
 
 
 func _on_animation_finished() -> void:
@@ -853,8 +1081,17 @@ func _on_animation_finished() -> void:
 		sprite.play("hurt")
 
 
-func _try_hit_enemies() -> void:
+## active_elapsed is how far past attack_startup we are, in seconds -- 0.0
+## the instant the window opens, up to attack_active_duration when it's
+## about to close -- used to grade sweet-spot vs late damage. Returns false
+## (window stays open, try again next frame) only when nobody is in the
+## hitbox at all yet; once someone is, this always resolves the swing even
+## if take_damage() itself is a no-op (target invincible mid-dodge/mid-dash),
+## matching the old single-instant behavior.
+func _try_hit_enemies(active_elapsed: float) -> bool:
 	var damage := attack_damage
+	var sweet_spot_cutoff := attack_active_duration * sweet_spot_ratio
+	damage *= sweet_spot_damage_multiplier if active_elapsed <= sweet_spot_cutoff else late_hit_damage_multiplier
 	if _next_hit_bonus:
 		damage *= 2.0
 		_next_hit_bonus = false
@@ -883,13 +1120,7 @@ func _try_hit_enemies() -> void:
 	if hit_any:
 		_apply_hitstop(normal_hit_hitstop_frames / 60.0, "HIT_ENEMY")
 
-	if not found_any:
-		var nearest_distance := INF
-		for enemy in get_tree().get_nodes_in_group("enemies"):
-			if is_instance_valid(enemy):
-				nearest_distance = minf(nearest_distance, global_position.distance_to(enemy.global_position))
-		if nearest_distance < INF:
-			TelemetryLogger.log_attack("FORWARD", nearest_distance, false)
+	return found_any
 
 
 func _spawn_hit_effect(at_position: Vector2) -> void:
@@ -910,12 +1141,14 @@ func take_damage(amount: float) -> bool:
 	if current_hp <= 0.0:
 		_die()
 	else:
+		_enter_state(PlayerState.HURT)
 		_is_attacking = false
 		sprite.play("hurt_flash")
 	return true
 
 
 func _die() -> void:
+	_enter_state(PlayerState.DEAD)
 	_is_dead = true
 	_is_attacking = false
 	if sfx_walk.playing:

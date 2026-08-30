@@ -1,0 +1,16 @@
+[remap]
+
+importer="dialogue_manager"
+importer_version=18
+type="Resource"
+uid="uid://cjeb8ga1xracj"
+path="res://.godot/imported/samurai_intro.dialogue-2b88b79b66bd4fe5f37b304029e4d070.tres"
+
+[deps]
+
+source_file="res://dialogue/samurai_intro.dialogue"
+dest_files=["res://.godot/imported/samurai_intro.dialogue-2b88b79b66bd4fe5f37b304029e4d070.tres"]
+
+[params]
+
+defaults=true

@@ -1,10 +1,54 @@
-[gd_scene load_steps=42 format=3]
+[gd_scene format=3 uid="uid://bli04ot8emnoh"]
 
-[ext_resource type="Script" path="res://samurai_npc.gd" id="0_npc_script"]
-[ext_resource type="Texture2D" path="res://assets/FREE_Samurai 2D Pixel Art v1.2/Sprites/IDLE.png" id="idle_tex"]
-[ext_resource type="Texture2D" path="res://assets/FREE_Samurai 2D Pixel Art v1.2/Sprites/RUN.png" id="run_tex"]
-[ext_resource type="Texture2D" path="res://assets/FREE_Samurai 2D Pixel Art v1.2/Sprites/ATTACK 1.png" id="atk_tex"]
-[ext_resource type="Texture2D" path="res://assets/FREE_Samurai 2D Pixel Art v1.2/Sprites/HURT.png" id="hurt_tex"]
+[ext_resource type="Script" uid="uid://7oq1jyx08o7w" path="res://samurai_npc.gd" id="0_npc_script"]
+[ext_resource type="Texture2D" uid="uid://27dv8jpv15td" path="res://assets/FREE_Samurai 2D Pixel Art v1.2/Sprites/ATTACK 1.png" id="atk_tex"]
+[ext_resource type="Texture2D" uid="uid://l5751cfvmjep" path="res://assets/FREE_Samurai 2D Pixel Art v1.2/Sprites/HURT.png" id="hurt_tex"]
+[ext_resource type="Texture2D" uid="uid://d4dnjp30igh1t" path="res://assets/FREE_Samurai 2D Pixel Art v1.2/Sprites/IDLE.png" id="idle_tex"]
+[ext_resource type="Texture2D" uid="uid://dy1j4fnqthu4s" path="res://assets/FREE_Samurai 2D Pixel Art v1.2/Sprites/RUN.png" id="run_tex"]
+
+[sub_resource type="AtlasTexture" id="atk_0"]
+atlas = ExtResource("atk_tex")
+region = Rect2(0, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="atk_1"]
+atlas = ExtResource("atk_tex")
+region = Rect2(96, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="atk_2"]
+atlas = ExtResource("atk_tex")
+region = Rect2(192, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="atk_3"]
+atlas = ExtResource("atk_tex")
+region = Rect2(288, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="atk_4"]
+atlas = ExtResource("atk_tex")
+region = Rect2(384, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="atk_5"]
+atlas = ExtResource("atk_tex")
+region = Rect2(480, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="atk_6"]
+atlas = ExtResource("atk_tex")
+region = Rect2(576, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="hurt_0"]
+atlas = ExtResource("hurt_tex")
+region = Rect2(0, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="hurt_1"]
+atlas = ExtResource("hurt_tex")
+region = Rect2(96, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="hurt_2"]
+atlas = ExtResource("hurt_tex")
+region = Rect2(192, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="hurt_3"]
+atlas = ExtResource("hurt_tex")
+region = Rect2(288, 0, 96, 96)
 
 [sub_resource type="AtlasTexture" id="idle_0"]
 atlas = ExtResource("idle_tex")
@@ -110,52 +154,52 @@ region = Rect2(1344, 0, 96, 96)
 atlas = ExtResource("run_tex")
 region = Rect2(1440, 0, 96, 96)
 
-[sub_resource type="AtlasTexture" id="atk_0"]
-atlas = ExtResource("atk_tex")
-region = Rect2(0, 0, 96, 96)
-
-[sub_resource type="AtlasTexture" id="atk_1"]
-atlas = ExtResource("atk_tex")
-region = Rect2(96, 0, 96, 96)
-
-[sub_resource type="AtlasTexture" id="atk_2"]
-atlas = ExtResource("atk_tex")
-region = Rect2(192, 0, 96, 96)
-
-[sub_resource type="AtlasTexture" id="atk_3"]
-atlas = ExtResource("atk_tex")
-region = Rect2(288, 0, 96, 96)
-
-[sub_resource type="AtlasTexture" id="atk_4"]
-atlas = ExtResource("atk_tex")
-region = Rect2(384, 0, 96, 96)
-
-[sub_resource type="AtlasTexture" id="atk_5"]
-atlas = ExtResource("atk_tex")
-region = Rect2(480, 0, 96, 96)
-
-[sub_resource type="AtlasTexture" id="atk_6"]
-atlas = ExtResource("atk_tex")
-region = Rect2(576, 0, 96, 96)
-
-[sub_resource type="AtlasTexture" id="hurt_0"]
-atlas = ExtResource("hurt_tex")
-region = Rect2(0, 0, 96, 96)
-
-[sub_resource type="AtlasTexture" id="hurt_1"]
-atlas = ExtResource("hurt_tex")
-region = Rect2(96, 0, 96, 96)
-
-[sub_resource type="AtlasTexture" id="hurt_2"]
-atlas = ExtResource("hurt_tex")
-region = Rect2(192, 0, 96, 96)
-
-[sub_resource type="AtlasTexture" id="hurt_3"]
-atlas = ExtResource("hurt_tex")
-region = Rect2(288, 0, 96, 96)
-
 [sub_resource type="SpriteFrames" id="frames_npc"]
-animations = [{"frames": [{
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("atk_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk_5")
+}, {
+"duration": 1.0,
+"texture": SubResource("atk_6")
+}],
+"loop": 0,
+"name": &"attack",
+"speed": 12.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("hurt_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("hurt_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("hurt_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("hurt_3")
+}],
+"loop": 0,
+"name": &"hurt",
+"speed": 10.0
+}, {
+"frames": [{
 "duration": 1.0,
 "texture": SubResource("idle_0")
 }, {
@@ -185,11 +229,12 @@ animations = [{"frames": [{
 }, {
 "duration": 1.0,
 "texture": SubResource("idle_9")
-}
-],"loop": true,
+}],
+"loop": 1,
 "name": &"idle",
 "speed": 8.0
-}, {"frames": [{
+}, {
+"frames": [{
 "duration": 1.0,
 "texture": SubResource("run_0")
 }, {
@@ -237,79 +282,46 @@ animations = [{"frames": [{
 }, {
 "duration": 1.0,
 "texture": SubResource("run_15")
-}
-],"loop": true,
+}],
+"loop": 1,
 "name": &"run",
 "speed": 14.0
-}, {"frames": [{
-"duration": 1.0,
-"texture": SubResource("atk_0")
-}, {
-"duration": 1.0,
-"texture": SubResource("atk_1")
-}, {
-"duration": 1.0,
-"texture": SubResource("atk_2")
-}, {
-"duration": 1.0,
-"texture": SubResource("atk_3")
-}, {
-"duration": 1.0,
-"texture": SubResource("atk_4")
-}, {
-"duration": 1.0,
-"texture": SubResource("atk_5")
-}, {
-"duration": 1.0,
-"texture": SubResource("atk_6")
-}
-],"loop": false,
-"name": &"attack",
-"speed": 12.0
-}, {"frames": [{
-"duration": 1.0,
-"texture": SubResource("hurt_0")
-}, {
-"duration": 1.0,
-"texture": SubResource("hurt_1")
-}, {
-"duration": 1.0,
-"texture": SubResource("hurt_2")
-}, {
-"duration": 1.0,
-"texture": SubResource("hurt_3")
-}
-],"loop": false,
-"name": &"hurt",
-"speed": 10.0
 }]
 
 [sub_resource type="RectangleShape2D" id="shape_npc"]
 size = Vector2(20, 34)
 
-[node name="SamuraiNPC" type="CharacterBody2D" groups=["enemies"]]
+[node name="SamuraiNPC" type="CharacterBody2D" unique_id=488824582 groups=["enemies"]]
 collision_layer = 2
 collision_mask = 5
 script = ExtResource("0_npc_script")
+speech_bubble_offset_y = -18.205
+speech_bubble_hold_duration = 2.49
+speech_bubble_font_size = 10
+speech_bubble_color = Color(0.952117, 0.8184509, 0.8303661, 1)
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=77261111]
 sprite_frames = SubResource("frames_npc")
 animation = &"idle"
 autoplay = "idle"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=617807943]
 position = Vector2(-2, 16)
 shape = SubResource("shape_npc")
 
-[node name="HealthBar" type="Node2D" parent="."]
+[node name="HealthBar" type="Node2D" parent="." unique_id=1915969771]
 position = Vector2(0, -24)
 
-[node name="Back" type="ColorRect" parent="HealthBar"]
-position = Vector2(-15, -2)
-size = Vector2(30, 5)
+[node name="Back" type="ColorRect" parent="HealthBar" unique_id=235578849]
+offset_left = -15.0
+offset_top = -2.0
+offset_right = 15.0
+offset_bottom = 3.0
 color = Color(0.08, 0.06, 0.07, 0.85)
 
-[node name="Fill" type="ColorRect" parent="HealthBar"]
-position = Vector2(-15, -2)
-size = Vector2(30, 5)
+[node name="Fill" type="ColorRect" parent="HealthBar" unique_id=89090913]
+offset_left = -15.0
+offset_top = -2.0
+offset_right = 15.0
+offset_bottom = 3.0
 color = Color(0.85, 0.45, 0.15, 1)

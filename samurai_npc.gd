@@ -3,6 +3,30 @@ extends CharacterBody2D
 const HIT_EFFECT := preload("res://hit_effect.tscn")
 const KNOCKBACK_DURATION := 0.1
 const STACK_UNSTICK_DURATION := 0.15
+## Blip played on every non-whitespace revealed letter while the speech
+## bubble types out -- see _on_bubble_letter_spoken().
+const TEXT_SFX := preload("res://Audio/Text Fx/text2.mp3")
+
+@export_group("Intro Line")
+## Shown once via DialogueManager the first time this NPC spots the player --
+## see _show_intro_line(). Fetched as plain text (get_next_dialogue_line, not
+## show_dialogue_balloon) and rendered as a speech bubble above this NPC's
+## own head instead of the addon's screen-space visual-novel balloon --
+## combat keeps running underneath it, no player input needed to dismiss it.
+## Swap this in the Inspector to change/remove the line without touching code.
+@export var intro_line: DialogueResource = preload("res://dialogue/samurai_intro.dialogue")
+@export var speech_bubble_offset_y: float = -100.0
+@export var speech_bubble_hold_duration: float = 2.5
+@export var speech_bubble_fade_duration: float = 0.35
+@export var speech_bubble_font_size: int = 18
+## Seconds between each revealed letter (DialogueLabel's default is 0.02, i.e.
+## 50 letters/sec -- too fast for TEXT_SFX to finish playing before the next
+## letter retriggers it, which just cuts the blip short every time instead of
+## it ringing out). Slow this down to roughly match the blip's own length.
+@export var speech_bubble_seconds_per_letter: float = 0.045
+## Matches level.gd's ACCENT_COLOR -- same neon-pink accent used across the
+## pause/death/victory screens.
+@export var speech_bubble_color: Color = Color(1, 0.18, 0.66, 1)
 
 ## Utility-scored combat actions -- see _score_action(). Only considered
 ## while _aware (see _update_memory); patrol and the reactive systems
@@ -83,6 +107,25 @@ const DEATH_SOUNDS := [
 @export var attack_cooldown: float = 1.1
 @export var attack_damage: float = 1.0
 @export var attack_startup: float = 0.15
+## Seconds this NPC is stunned after a parried attack (cancel_attack_parried)
+## -- kept at/above the player's own attack_speed (0.5s) so a successful
+## parry always leaves a real counter-attack window open. Was 0.3s, shorter
+## than the 0.5s swing needed to actually punish it -- landing a hit during
+## the "opening" was never possible.
+@export var parry_stun_duration: float = 0.55
+
+@export_group("Hit Zones")
+## Mirrors player.gd's own Hit Zones group -- how long (seconds) this NPC's
+## attack keeps checking for the player after its post-parry-grace window
+## opens (see _try_commit_attack_damage), instead of a single instant.
+@export var attack_active_duration: float = 0.12
+## Fraction of attack_active_duration counted as the sweet spot -- landing
+## the hit within this slice deals bonus damage; later in the window deals
+## reduced damage.
+@export var sweet_spot_ratio: float = 0.35
+@export var sweet_spot_damage_multiplier: float = 1.5
+@export var late_hit_damage_multiplier: float = 0.75
+
 @export var max_hp: float = 3.0
 @export var jump_gravity: float = 900.0
 @export var max_fall_speed: float = 1400.0
@@ -164,6 +207,7 @@ signal died
 @onready var hitbox: Area2D = _make_hitbox()
 @onready var sfx_attack: AudioStreamPlayer = _make_sfx_player()
 @onready var sfx_dash: AudioStreamPlayer = _make_sfx_player()
+@onready var sfx_text: AudioStreamPlayer = _make_sfx_player()
 
 var current_hp: float
 var _hp_bar_full_width: float
@@ -214,6 +258,10 @@ var _patrol_pause_timer := 0.0
 var _aware := false
 var _last_known_player_pos := Vector2.ZERO
 var _memory_timer := 0.0
+## Set true the first time this NPC ever spots the player -- gates intro_line
+## to a single showing per NPC instance instead of replaying it on every
+## re-detection after the player breaks line of sight.
+var _intro_line_played := false
 var _stuck_timer := 0.0
 ## True only for frames where _chase_across_terrain actually committed to
 ## walking (or jumping) toward the search target -- as opposed to holding
@@ -369,6 +417,9 @@ func _update_memory(seeing: bool, delta: float) -> void:
 		_memory_timer = memory_duration
 		if not was_aware:
 			_alert_nearby_allies()
+			if not _intro_line_played:
+				_intro_line_played = true
+				_show_intro_line()
 	elif _aware:
 		_memory_timer = maxf(_memory_timer - delta, 0.0)
 		if _memory_timer <= 0.0:
@@ -891,29 +942,50 @@ func set_max_hp(value: float) -> void:
 ## Damage doesn't land the instant the hitbox goes active -- it's held for
 ## PARRY_GRACE_FRAMES past that moment so a player parry attempt arriving
 ## slightly late still has a real chance to cancel it (see cancel_attack_parried).
+## Past that grace period, keeps checking every frame (mirrors player.gd's
+## own Hit Zones window) instead of a single instant, graded early/late --
+## see _try_commit_damage_in_window.
 func _try_commit_attack_damage() -> void:
 	if _damage_resolved or _attack_parried:
 		return
-	var commit_time := _attack_active_time + PARRY_GRACE_FRAMES / 60.0
-	if Time.get_ticks_msec() / 1000.0 < commit_time:
+	var window_open_time := _attack_active_time + PARRY_GRACE_FRAMES / 60.0
+	var now := Time.get_ticks_msec() / 1000.0
+	if now < window_open_time:
 		return
-	_damage_resolved = true
-	var distance_to_player: float = global_position.distance_to(_player.global_position) if _player else 0.0
+	var active_elapsed := now - window_open_time
+	if _try_commit_damage_in_window(active_elapsed):
+		_damage_resolved = true
+	elif active_elapsed >= attack_active_duration:
+		_damage_resolved = true
+		var distance_to_player: float = global_position.distance_to(_player.global_position) if _player else 0.0
+		TelemetryLogger.log_enemy_attack(distance_to_player, false, 0.0)
+
+
+## Returns true once the player is found in the hitbox and the swing
+## resolves against them (whether or not take_damage() itself is a no-op,
+## e.g. the player was mid-dash) -- false means "not there yet, keep the
+## window open." active_elapsed grades sweet-spot vs late damage exactly
+## like player.gd's _try_hit_enemies.
+func _try_commit_damage_in_window(active_elapsed: float) -> bool:
 	for body in hitbox.get_overlapping_bodies():
 		if not is_instance_valid(body) or not body.is_in_group("player"):
 			continue
+		var distance_to_player: float = global_position.distance_to(body.global_position)
+		var damage := attack_damage
+		var sweet_spot_cutoff := attack_active_duration * sweet_spot_ratio
+		damage *= sweet_spot_damage_multiplier if active_elapsed <= sweet_spot_cutoff else late_hit_damage_multiplier
 		# take_damage() returns false if the player was invincible (mid-dash)
 		# -- must not count that as a landed hit (see the matching fix on the
 		# player's own _try_hit_enemies for why this matters).
-		if body.take_damage(attack_damage):
+		if body.take_damage(damage):
 			_spawn_hit_effect(body.global_position)
 			TelemetryLogger.log_enemy_attack(distance_to_player, true, body.current_hp)
 			if body.has_method("request_hitstop"):
 				body.request_hitstop(body.normal_hit_hitstop_frames, "HIT_PLAYER")
 		else:
 			TelemetryLogger.log_enemy_attack(distance_to_player, false, 0.0)
-		return
-	TelemetryLogger.log_enemy_attack(distance_to_player, false, 0.0)
+		return true
+	return false
 
 
 func _on_animation_finished() -> void:
@@ -926,6 +998,67 @@ func _spawn_hit_effect(at_position: Vector2) -> void:
 	var effect := HIT_EFFECT.instantiate()
 	get_parent().add_child(effect)
 	effect.global_position = at_position
+
+
+## Async: get_next_dialogue_line() suspends until DialogueManager resolves the
+## "start" cue -- by the time it returns, this NPC could already be dead or
+## freed (e.g. the player one-shot it the same frame it spotted them), hence
+## the validity/death check before touching self any further.
+func _show_intro_line() -> void:
+	if intro_line == null:
+		return
+	var line: DialogueLine = await DialogueManager.get_next_dialogue_line(intro_line, "start")
+	if not is_instance_valid(self) or _is_dead or line == null:
+		return
+	_spawn_speech_bubble(line)
+
+
+## World-space speech bubble, not the addon's screen-space balloon: a
+## DialogueLabel (the addon's own RichTextLabel subclass, reused here for its
+## built-in letter-by-letter typewriter, not for its dialogue-graph features)
+## added as a sibling of the sprite (so it doesn't inherit sprite.flip_h and
+## end up mirror-flipped). Types out with a blip per letter, holds, fades out
+## and frees itself -- no player input needed to dismiss it.
+func _spawn_speech_bubble(line: DialogueLine) -> void:
+	var font := SystemFont.new()
+	font.font_names = PackedStringArray(["Consolas", "Courier New", "Lucida Console", "monospace"])
+
+	var label := DialogueLabel.new()
+	label.size = Vector2(220.0, 40.0)
+	label.position = Vector2(-110.0, speech_bubble_offset_y)
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.bbcode_enabled = true
+	label.scroll_active = false
+	label.add_theme_font_override("normal_font", font)
+	label.add_theme_font_size_override("normal_font_size", speech_bubble_font_size)
+	label.add_theme_color_override("default_color", speech_bubble_color)
+	label.add_theme_color_override("font_outline_color", Color(0.02, 0.01, 0.03, 0.95))
+	label.add_theme_constant_override("outline_size", 6)
+	label.z_index = 10
+	label.seconds_per_step = speech_bubble_seconds_per_letter
+	label.dialogue_line = line
+	add_child(label)
+
+	label.spoke.connect(_on_bubble_letter_spoken)
+	label.type_out()
+	await label.finished_typing
+	if not is_instance_valid(label):
+		return
+
+	await get_tree().create_timer(speech_bubble_hold_duration).timeout
+	if not is_instance_valid(label):
+		return
+	var tween := create_tween()
+	tween.tween_property(label, "modulate:a", 0.0, speech_bubble_fade_duration)
+	tween.tween_callback(label.queue_free)
+
+
+## Skips whitespace so word gaps don't produce a spurious blip between words.
+func _on_bubble_letter_spoken(letter: String, _letter_index: int, _speed: float) -> void:
+	if letter.strip_edges() == "":
+		return
+	sfx_text.pitch_scale = randf_range(0.92, 1.08)
+	_play_sfx(sfx_text, TEXT_SFX)
 
 
 ## Called by the player the instant a parry beats this NPC's active attack:
@@ -945,7 +1078,7 @@ func cancel_attack_parried(_perfect: bool, attacker: Node2D, knockback: float) -
 	_knockback_velocity_x = dir_x * (knockback / KNOCKBACK_DURATION)
 	_knockback_timer = KNOCKBACK_DURATION
 	_is_stunned = true
-	_stun_timer = 0.3
+	_stun_timer = parry_stun_duration
 
 
 ## Returns false (no-op) if invincible (mid-dodge) -- callers must check this
