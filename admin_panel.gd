@@ -19,11 +19,24 @@ const PRESET_DIR := "res://BAG/admin_presets"
 ## DEFAULT" actually changes what a fresh session starts with.
 const DEFAULT_PRESET_PATH := PRESET_DIR + "/default.json"
 
+## Same neon pink used for the in-game HUD/end-screen accent (level.gd's
+## ACCENT_COLOR) -- kept as its own constant here rather than importing
+## level.gd, since the panel is an autoload that must work even before any
+## level is loaded.
+const ACCENT_COLOR := Color(1, 0.18, 0.66, 1)
+## Cooler secondary accent (matches debug_visualizer.gd's "not seeing"
+## vision-cone cyan) -- used for the panel's slider fill/border so sections
+## read as their own dark-glass "cards" instead of a flat wall of sliders.
+const SECONDARY_COLOR := Color(0.3, 0.85, 1.0, 1)
+const PANEL_BG_COLOR := Color(0.04, 0.03, 0.07, 0.94)
+const CARD_BG_COLOR := Color(1, 1, 1, 0.035)
+
 const LEVELS := [
 	{"label": "LEVEL 1", "path": "res://level.tscn"},
 	{"label": "LEVEL 2", "path": "res://level2.tscn"},
 	{"label": "LEVEL 3", "path": "res://level3.tscn"},
 	{"label": "LEVEL 4", "path": "res://level4.tscn"},
+	{"label": "LEVEL 5", "path": "res://level5.tscn"},
 ]
 
 ## Lets you preview-switch which track is playing regardless of current
@@ -41,70 +54,115 @@ const MUSIC_TRACKS := [
 ## row's "default" entry in place after SAVE AS DEFAULT -- a const array's
 ## nested Dictionaries are read-only in GDScript, so const here would throw
 ## on that very first write.
+## "cat" mirrors player.gd's own @export_group layout (plus "base" for the
+## handful of ungrouped stats declared before the first group) -- _build_ui
+## reads it to lay the Player tab out as labeled sections instead of one
+## long undifferentiated list, the same way NPC_SLIDERS already does for
+## the combat/ai tab split below.
 var PLAYER_SLIDERS := [
-	{"key": "max_hp", "label": "HP игрока", "min": 1.0, "max": 10.0, "step": 1.0, "default": 3.0},
-	{"key": "move_speed", "label": "Скорость движения, px/s", "min": 50.0, "max": 500.0, "step": 10.0, "default": 250.0},
-	{"key": "attack_damage", "label": "Урон атаки", "min": 0.5, "max": 5.0, "step": 0.5, "default": 1.0},
-	{"key": "attack_speed", "label": "Кулдаун атаки, сек (меньше = быстрее)", "min": 0.1, "max": 1.5, "step": 0.05, "default": 0.5},
-	{"key": "strike_range", "label": "Дальность удара, px", "min": 20.0, "max": 150.0, "step": 5.0, "default": 50.0},
-	{"key": "jump_velocity", "label": "Сила прыжка, px/s", "min": 100.0, "max": 500.0, "step": 10.0, "default": 445.0},
-	{"key": "jump_gravity", "label": "Гравитация, px/s^2", "min": 300.0, "max": 2000.0, "step": 50.0, "default": 900.0},
-	{"key": "max_fall_speed", "label": "Макс. скорость падения, px/s", "min": 400.0, "max": 3000.0, "step": 50.0, "default": 1400.0},
-	{"key": "coyote_time", "label": "Coyote time (прыжок с обрыва), сек", "min": 0.0, "max": 0.3, "step": 0.01, "default": 0.1},
-	{"key": "jump_buffer_time", "label": "Буфер прыжка, сек", "min": 0.0, "max": 0.3, "step": 0.01, "default": 0.1},
-	{"key": "dash_distance", "label": "Дистанция рывка, px", "min": 20.0, "max": 300.0, "step": 10.0, "default": 60.0},
-	{"key": "dash_duration", "label": "Длительность рывка, сек", "min": 0.05, "max": 0.6, "step": 0.05, "default": 0.2},
-	{"key": "dash_cooldown", "label": "Кулдаун рывка, сек", "min": 0.2, "max": 5.0, "step": 0.1, "default": 2.0},
-	{"key": "normal_hit_hitstop_frames", "label": "Хит-стоп на обычный удар, кадры", "min": 0.0, "max": 10.0, "step": 1.0, "default": 2.0},
-	{"key": "parry_late_limit_frames", "label": "Окно парирования, кадры", "min": 2.0, "max": 20.0, "step": 1.0, "default": 10.0},
-	{"key": "max_parry_charges", "label": "Заряды парирования", "min": 1.0, "max": 6.0, "step": 1.0, "default": 3.0},
-	{"key": "parry_regen_interval", "label": "Восст. заряда парирования, сек", "min": 0.5, "max": 10.0, "step": 0.5, "default": 3.0},
-	{"key": "perfect_streak_for_bonus", "label": "Серия PERFECT для бонус-урона", "min": 1.0, "max": 10.0, "step": 1.0, "default": 3.0},
-	{"key": "wall_slide_speed", "label": "Скорость слайда по стене, px/s", "min": 20.0, "max": 400.0, "step": 10.0, "default": 90.0},
-	{"key": "wall_jump_speed_x", "label": "Отпрыг от стены X, px/s", "min": 100.0, "max": 700.0, "step": 10.0, "default": 380.0},
-	{"key": "wall_jump_speed_y", "label": "Отпрыг от стены Y, px/s", "min": 100.0, "max": 700.0, "step": 10.0, "default": 420.0},
-	{"key": "wall_jump_control_lock", "label": "Блок управления после отпрыга, сек", "min": 0.0, "max": 0.5, "step": 0.01, "default": 0.15},
-	{"key": "wall_coyote_time", "label": "Coyote time у стены, сек", "min": 0.0, "max": 0.3, "step": 0.01, "default": 0.1},
-	{"key": "attack_active_duration", "label": "Окно попадания удара, сек", "min": 0.02, "max": 0.4, "step": 0.01, "default": 0.12},
-	{"key": "sweet_spot_ratio", "label": "Доля окна = sweet spot", "min": 0.05, "max": 1.0, "step": 0.05, "default": 0.35},
-	{"key": "sweet_spot_damage_multiplier", "label": "Множитель урона sweet spot", "min": 1.0, "max": 3.0, "step": 0.1, "default": 1.5},
-	{"key": "late_hit_damage_multiplier", "label": "Множитель урона поздний хит", "min": 0.1, "max": 1.0, "step": 0.05, "default": 0.75},
+	{"key": "max_hp", "label": "HP игрока", "min": 1.0, "max": 10.0, "step": 1.0, "default": 3.0, "cat": "base"},
+	{"key": "move_speed", "label": "Скорость движения, px/s", "min": 50.0, "max": 500.0, "step": 10.0, "default": 250.0, "cat": "base"},
+	{"key": "attack_damage", "label": "Урон атаки", "min": 0.5, "max": 5.0, "step": 0.5, "default": 1.0, "cat": "base"},
+	{"key": "attack_speed", "label": "Кулдаун атаки, сек (меньше = быстрее)", "min": 0.1, "max": 1.5, "step": 0.05, "default": 0.5, "cat": "base"},
+	{"key": "strike_range", "label": "Дальность удара, px", "min": 20.0, "max": 150.0, "step": 5.0, "default": 50.0, "cat": "base"},
+	{"key": "walk_speed_ratio", "label": "Скорость скрытной ходьбы (доля от обычной)", "min": 0.1, "max": 1.0, "step": 0.05, "default": 0.45, "cat": "movement"},
+	{"key": "jump_velocity", "label": "Сила прыжка, px/s", "min": 100.0, "max": 500.0, "step": 10.0, "default": 445.0, "cat": "jump"},
+	{"key": "jump_gravity", "label": "Гравитация, px/s^2", "min": 300.0, "max": 2000.0, "step": 50.0, "default": 900.0, "cat": "jump"},
+	{"key": "max_fall_speed", "label": "Макс. скорость падения, px/s", "min": 400.0, "max": 3000.0, "step": 50.0, "default": 1400.0, "cat": "jump"},
+	{"key": "coyote_time", "label": "Coyote time (прыжок с обрыва), сек", "min": 0.0, "max": 0.3, "step": 0.01, "default": 0.1, "cat": "jump"},
+	{"key": "jump_buffer_time", "label": "Буфер прыжка, сек", "min": 0.0, "max": 0.3, "step": 0.01, "default": 0.1, "cat": "jump"},
+	{"key": "wall_slide_speed", "label": "Скорость слайда по стене, px/s", "min": 20.0, "max": 400.0, "step": 10.0, "default": 90.0, "cat": "wall"},
+	{"key": "wall_jump_speed_x", "label": "Отпрыг от стены X, px/s", "min": 100.0, "max": 700.0, "step": 10.0, "default": 380.0, "cat": "wall"},
+	{"key": "wall_jump_speed_y", "label": "Отпрыг от стены Y, px/s", "min": 100.0, "max": 700.0, "step": 10.0, "default": 420.0, "cat": "wall"},
+	{"key": "wall_jump_control_lock", "label": "Блок управления после отпрыга, сек", "min": 0.0, "max": 0.5, "step": 0.01, "default": 0.15, "cat": "wall"},
+	{"key": "wall_coyote_time", "label": "Coyote time у стены, сек", "min": 0.0, "max": 0.3, "step": 0.01, "default": 0.1, "cat": "wall"},
+	{"key": "dash_distance", "label": "Дистанция рывка, px", "min": 20.0, "max": 300.0, "step": 10.0, "default": 60.0, "cat": "dash"},
+	{"key": "dash_duration", "label": "Длительность рывка, сек", "min": 0.05, "max": 0.6, "step": 0.05, "default": 0.2, "cat": "dash"},
+	{"key": "dash_cooldown", "label": "Кулдаун рывка, сек", "min": 0.2, "max": 5.0, "step": 0.1, "default": 2.0, "cat": "dash"},
+	{"key": "attack_active_duration", "label": "Окно попадания удара, сек", "min": 0.02, "max": 0.4, "step": 0.01, "default": 0.12, "cat": "hitzones"},
+	{"key": "sweet_spot_ratio", "label": "Доля окна = sweet spot", "min": 0.05, "max": 1.0, "step": 0.05, "default": 0.35, "cat": "hitzones"},
+	{"key": "sweet_spot_damage_multiplier", "label": "Множитель урона sweet spot", "min": 1.0, "max": 3.0, "step": 0.1, "default": 1.5, "cat": "hitzones"},
+	{"key": "late_hit_damage_multiplier", "label": "Множитель урона поздний хит", "min": 0.1, "max": 1.0, "step": 0.05, "default": 0.75, "cat": "hitzones"},
+	{"key": "parry_late_limit_frames", "label": "Окно парирования, кадры", "min": 2.0, "max": 20.0, "step": 1.0, "default": 10.0, "cat": "parry"},
+	{"key": "max_parry_charges", "label": "Заряды парирования", "min": 1.0, "max": 6.0, "step": 1.0, "default": 3.0, "cat": "parry"},
+	{"key": "parry_regen_interval", "label": "Восст. заряда парирования, сек", "min": 0.5, "max": 10.0, "step": 0.5, "default": 3.0, "cat": "parry"},
+	{"key": "perfect_streak_for_bonus", "label": "Серия PERFECT для бонус-урона", "min": 1.0, "max": 10.0, "step": 1.0, "default": 3.0, "cat": "parry"},
+	{"key": "normal_hit_hitstop_frames", "label": "Хит-стоп на обычный удар, кадры", "min": 0.0, "max": 10.0, "step": 1.0, "default": 2.0, "cat": "feel"},
 ]
+
+## Ordered (dictionaries keep insertion order in GDScript) key -> header text
+## for the Player tab's sections. Order here is the order sections appear in.
+var PLAYER_CATEGORY_LABELS := {
+	"base": "ОБЩЕЕ",
+	"movement": "ДВИЖЕНИЕ",
+	"jump": "ПРЫЖОК",
+	"wall": "СТЕНЫ / WALL JUMP",
+	"dash": "РЫВОК",
+	"hitzones": "ОКНО УДАРА",
+	"parry": "ПАРИРОВАНИЕ",
+	"feel": "HITSTOP",
+}
 
 ## "cat" is "combat" or "ai" -- splits this one list across the two NPC tabs
 ## in the panel (see _build_ui) without needing two separate arrays (which
 ## would also mean two separate places to keep _npc_overrides/defaults in sync).
+## "sub" further sections each of those two tabs, mirroring samurai_npc.gd's
+## own @export_group layout (Dodge/Flank/Hit Zones/Suspicion/Platforming/
+## AI Pacing/Patrol) so the panel's sections line up with the script's.
 var NPC_SLIDERS := [
-	{"key": "max_hp", "label": "HP врага", "min": 1.0, "max": 10.0, "step": 1.0, "default": 3.0, "cat": "combat"},
-	{"key": "move_speed", "label": "Скорость движения, px/s", "min": 20.0, "max": 400.0, "step": 10.0, "default": 140.0, "cat": "combat"},
-	{"key": "attack_damage", "label": "Урон атаки", "min": 0.5, "max": 5.0, "step": 0.5, "default": 1.0, "cat": "combat"},
-	{"key": "attack_cooldown", "label": "Кулдаун атаки, сек", "min": 0.2, "max": 3.0, "step": 0.1, "default": 1.1, "cat": "combat"},
-	{"key": "attack_startup", "label": "Замах перед ударом, сек", "min": 0.05, "max": 0.6, "step": 0.05, "default": 0.15, "cat": "combat"},
-	{"key": "attack_range", "label": "Дальность удара, px", "min": 20.0, "max": 150.0, "step": 5.0, "default": 46.0, "cat": "combat"},
-	{"key": "parry_stun_duration", "label": "Стан после парирования, сек", "min": 0.1, "max": 2.0, "step": 0.05, "default": 0.55, "cat": "combat"},
-	{"key": "attack_active_duration", "label": "Окно попадания удара, сек", "min": 0.02, "max": 0.4, "step": 0.01, "default": 0.12, "cat": "combat"},
-	{"key": "sweet_spot_ratio", "label": "Доля окна = sweet spot", "min": 0.05, "max": 1.0, "step": 0.05, "default": 0.35, "cat": "combat"},
-	{"key": "sweet_spot_damage_multiplier", "label": "Множитель урона sweet spot", "min": 1.0, "max": 3.0, "step": 0.1, "default": 1.5, "cat": "combat"},
-	{"key": "late_hit_damage_multiplier", "label": "Множитель урона поздний хит", "min": 0.1, "max": 1.0, "step": 0.05, "default": 0.75, "cat": "combat"},
-	{"key": "dodge_chance", "label": "Шанс защитного уворота (при угрозе)", "min": 0.0, "max": 1.0, "step": 0.05, "default": 0.35, "cat": "combat"},
-	{"key": "dodge_distance", "label": "Дистанция уворота, px", "min": 10.0, "max": 150.0, "step": 5.0, "default": 60.0, "cat": "combat"},
-	{"key": "dodge_duration", "label": "Длительность уворота, сек", "min": 0.05, "max": 0.5, "step": 0.05, "default": 0.15, "cat": "combat"},
-	{"key": "dodge_cooldown", "label": "Кулдаун уворота, сек", "min": 0.2, "max": 5.0, "step": 0.1, "default": 1.5, "cat": "combat"},
-	{"key": "dodge_danger_range", "label": "Дальность реакции на замах игрока, px", "min": 30.0, "max": 300.0, "step": 10.0, "default": 90.0, "cat": "combat"},
-	{"key": "flank_chance", "label": "Шанс обходного манёвра (заход за спину)", "min": 0.0, "max": 1.0, "step": 0.05, "default": 0.3, "cat": "combat"},
-	{"key": "flank_range", "label": "Дальность обходного манёвра, px", "min": 30.0, "max": 300.0, "step": 10.0, "default": 160.0, "cat": "combat"},
-	{"key": "detect_range", "label": "Дальность обнаружения, px", "min": 50.0, "max": 900.0, "step": 10.0, "default": 260.0, "cat": "ai"},
-	{"key": "vision_angle_degrees", "label": "Угол обзора (конус), °", "min": 10.0, "max": 180.0, "step": 5.0, "default": 55.0, "cat": "ai"},
-	{"key": "memory_duration", "label": "Память после потери из виду, сек", "min": 0.5, "max": 10.0, "step": 0.5, "default": 3.0, "cat": "ai"},
-	{"key": "scan_interval", "label": "Озирание по сторонам, сек", "min": 0.1, "max": 3.0, "step": 0.1, "default": 0.6, "cat": "ai"},
-	{"key": "alert_call_range", "label": "Радиус тревоги союзникам, px", "min": 0.0, "max": 600.0, "step": 20.0, "default": 220.0, "cat": "ai"},
-	{"key": "jump_velocity", "label": "Сила прыжка через провал, px/s", "min": 100.0, "max": 700.0, "step": 10.0, "default": 420.0, "cat": "ai"},
-	{"key": "max_jump_gap", "label": "Макс. дистанция прыжка, px", "min": 50.0, "max": 500.0, "step": 10.0, "default": 200.0, "cat": "ai"},
-	{"key": "think_duration_min", "label": "Пауза-\"думает\" мин, сек", "min": 0.0, "max": 1.0, "step": 0.05, "default": 0.15, "cat": "ai"},
-	{"key": "think_duration_max", "label": "Пауза-\"думает\" макс, сек", "min": 0.0, "max": 2.0, "step": 0.05, "default": 0.4, "cat": "ai"},
-	{"key": "patrol_radius", "label": "Радиус патрулирования, px", "min": 0.0, "max": 500.0, "step": 10.0, "default": 150.0, "cat": "ai"},
-	{"key": "patrol_speed_ratio", "label": "Скорость патрулирования (доля от бега)", "min": 0.1, "max": 1.0, "step": 0.05, "default": 0.5, "cat": "ai"},
+	{"key": "max_hp", "label": "HP врага", "min": 1.0, "max": 10.0, "step": 1.0, "default": 3.0, "cat": "combat", "sub": "base"},
+	{"key": "move_speed", "label": "Скорость движения, px/s", "min": 20.0, "max": 400.0, "step": 10.0, "default": 140.0, "cat": "combat", "sub": "base"},
+	{"key": "attack_damage", "label": "Урон атаки", "min": 0.5, "max": 5.0, "step": 0.5, "default": 1.0, "cat": "combat", "sub": "attack"},
+	{"key": "attack_cooldown", "label": "Кулдаун атаки, сек", "min": 0.2, "max": 3.0, "step": 0.1, "default": 1.1, "cat": "combat", "sub": "attack"},
+	{"key": "attack_startup", "label": "Замах перед ударом, сек", "min": 0.05, "max": 0.6, "step": 0.05, "default": 0.15, "cat": "combat", "sub": "attack"},
+	{"key": "attack_range", "label": "Дальность удара, px", "min": 20.0, "max": 150.0, "step": 5.0, "default": 46.0, "cat": "combat", "sub": "attack"},
+	{"key": "parry_stun_duration", "label": "Стан после парирования, сек", "min": 0.1, "max": 2.0, "step": 0.05, "default": 0.55, "cat": "combat", "sub": "attack"},
+	{"key": "attack_active_duration", "label": "Окно попадания удара, сек", "min": 0.02, "max": 0.4, "step": 0.01, "default": 0.12, "cat": "combat", "sub": "hitzones"},
+	{"key": "sweet_spot_ratio", "label": "Доля окна = sweet spot", "min": 0.05, "max": 1.0, "step": 0.05, "default": 0.35, "cat": "combat", "sub": "hitzones"},
+	{"key": "sweet_spot_damage_multiplier", "label": "Множитель урона sweet spot", "min": 1.0, "max": 3.0, "step": 0.1, "default": 1.5, "cat": "combat", "sub": "hitzones"},
+	{"key": "late_hit_damage_multiplier", "label": "Множитель урона поздний хит", "min": 0.1, "max": 1.0, "step": 0.05, "default": 0.75, "cat": "combat", "sub": "hitzones"},
+	{"key": "dodge_chance", "label": "Шанс защитного уворота (при угрозе)", "min": 0.0, "max": 1.0, "step": 0.05, "default": 0.35, "cat": "combat", "sub": "dodge"},
+	{"key": "dodge_distance", "label": "Дистанция уворота, px", "min": 10.0, "max": 150.0, "step": 5.0, "default": 60.0, "cat": "combat", "sub": "dodge"},
+	{"key": "dodge_duration", "label": "Длительность уворота, сек", "min": 0.05, "max": 0.5, "step": 0.05, "default": 0.15, "cat": "combat", "sub": "dodge"},
+	{"key": "dodge_cooldown", "label": "Кулдаун уворота, сек", "min": 0.2, "max": 5.0, "step": 0.1, "default": 1.5, "cat": "combat", "sub": "dodge"},
+	{"key": "dodge_danger_range", "label": "Дальность реакции на замах игрока, px", "min": 30.0, "max": 300.0, "step": 10.0, "default": 90.0, "cat": "combat", "sub": "dodge"},
+	{"key": "flank_chance", "label": "Шанс обходного манёвра (заход за спину)", "min": 0.0, "max": 1.0, "step": 0.05, "default": 0.3, "cat": "combat", "sub": "flank"},
+	{"key": "flank_range", "label": "Дальность обходного манёвра, px", "min": 30.0, "max": 300.0, "step": 10.0, "default": 160.0, "cat": "combat", "sub": "flank"},
+	{"key": "detect_range", "label": "Дальность обнаружения, px", "min": 50.0, "max": 900.0, "step": 10.0, "default": 260.0, "cat": "ai", "sub": "detect"},
+	{"key": "stealth_range_multiplier", "label": "Множитель дальности против скрытной ходьбы игрока", "min": 0.1, "max": 1.0, "step": 0.05, "default": 0.5, "cat": "ai", "sub": "detect"},
+	{"key": "vision_angle_degrees", "label": "Угол обзора (конус), °", "min": 10.0, "max": 180.0, "step": 5.0, "default": 55.0, "cat": "ai", "sub": "detect"},
+	{"key": "memory_duration", "label": "Память после потери из виду, сек", "min": 0.5, "max": 10.0, "step": 0.5, "default": 3.0, "cat": "ai", "sub": "detect"},
+	{"key": "suspicion_range", "label": "Дальность подозрения \"?\", px", "min": 50.0, "max": 1200.0, "step": 10.0, "default": 340.0, "cat": "ai", "sub": "suspicion"},
+	{"key": "suspicion_angle_degrees", "label": "Угол подозрения \"?\", °", "min": 10.0, "max": 360.0, "step": 5.0, "default": 110.0, "cat": "ai", "sub": "suspicion"},
+	{"key": "suspicion_confirm_time", "label": "Время до подтверждения \"?\" -> \"!?\", сек", "min": 0.1, "max": 3.0, "step": 0.1, "default": 0.8, "cat": "ai", "sub": "suspicion"},
+	{"key": "suspicion_decay_time", "label": "Время сброса подозрения, сек", "min": 0.1, "max": 3.0, "step": 0.1, "default": 0.5, "cat": "ai", "sub": "suspicion"},
+	{"key": "alert_call_range", "label": "Радиус тревоги союзникам, px", "min": 0.0, "max": 600.0, "step": 20.0, "default": 220.0, "cat": "ai", "sub": "suspicion"},
+	{"key": "jump_velocity", "label": "Сила прыжка через провал, px/s", "min": 100.0, "max": 700.0, "step": 10.0, "default": 420.0, "cat": "ai", "sub": "platforming"},
+	{"key": "max_jump_gap", "label": "Макс. дистанция прыжка, px", "min": 50.0, "max": 500.0, "step": 10.0, "default": 200.0, "cat": "ai", "sub": "platforming"},
+	{"key": "think_duration_min", "label": "Пауза-\"думает\" мин, сек", "min": 0.0, "max": 1.0, "step": 0.05, "default": 0.15, "cat": "ai", "sub": "pacing"},
+	{"key": "think_duration_max", "label": "Пауза-\"думает\" макс, сек", "min": 0.0, "max": 2.0, "step": 0.05, "default": 0.4, "cat": "ai", "sub": "pacing"},
+	{"key": "scan_interval", "label": "Озирание по сторонам, сек", "min": 0.1, "max": 3.0, "step": 0.1, "default": 0.6, "cat": "ai", "sub": "pacing"},
+	{"key": "patrol_radius", "label": "Радиус патрулирования, px", "min": 0.0, "max": 500.0, "step": 10.0, "default": 150.0, "cat": "ai", "sub": "patrol"},
+	{"key": "patrol_speed_ratio", "label": "Скорость патрулирования (доля от бега)", "min": 0.1, "max": 1.0, "step": 0.05, "default": 0.5, "cat": "ai", "sub": "patrol"},
 ]
+
+## Ordered sub -> header text for the NPC "Бой" (combat) tab's sections.
+var NPC_COMBAT_SUBCATEGORY_LABELS := {
+	"base": "ОБЩЕЕ",
+	"attack": "АТАКА",
+	"hitzones": "ОКНО УДАРА",
+	"dodge": "УВОРОТ",
+	"flank": "ОБХОДНОЙ МАНЁВР",
+}
+
+## Ordered sub -> header text for the NPC "ИИ" tab's sections.
+var NPC_AI_SUBCATEGORY_LABELS := {
+	"detect": "ОБНАРУЖЕНИЕ",
+	"suspicion": "ПОДОЗРЕНИЕ",
+	"platforming": "ПЛАТФОРМИНГ",
+	"pacing": "ТЕМП РЕАКЦИИ",
+	"patrol": "ПАТРУЛЬ",
+}
 
 var panel_open := false
 
@@ -134,10 +192,19 @@ var _npc_afk_toggle: CheckButton
 var _load_list_vbox: VBoxContainer
 var _all_sliders: Array = []  # [{slider: HSlider, default: float, key: String, group: String}]
 
+## Shared StyleBoxFlat resources for every HSlider's track/fill -- built once
+## in _ready() via _make_slider_style() and reused across all ~65 sliders (a
+## StyleBox is a Resource; the same instance can back many nodes at once,
+## and none of them mutate it) instead of allocating one per slider.
+var _slider_track_style: StyleBoxFlat
+var _slider_fill_style: StyleBoxFlat
+
 
 func _ready() -> void:
 	layer = 30
 	_font = _make_font()
+	_slider_track_style = _make_slider_style(CARD_BG_COLOR)
+	_slider_fill_style = _make_slider_style(SECONDARY_COLOR)
 	_load_default_preset_into_slider_defaults()
 	for row in NPC_SLIDERS:
 		_npc_overrides[row["key"]] = row["default"]
@@ -182,6 +249,20 @@ func _make_font() -> Font:
 	return f
 
 
+## Small rounded pill used for both the slider's track (dim) and its filled
+## portion (bright) -- see _slider_track_style/_slider_fill_style.
+func _make_slider_style(color: Color) -> StyleBoxFlat:
+	var s := StyleBoxFlat.new()
+	s.bg_color = color
+	s.corner_radius_top_left = 5
+	s.corner_radius_top_right = 5
+	s.corner_radius_bottom_left = 5
+	s.corner_radius_bottom_right = 5
+	s.content_margin_top = 7
+	s.content_margin_bottom = 7
+	return s
+
+
 func _build_ui() -> void:
 	_panel_root = Control.new()
 	_panel_root.visible = false
@@ -189,33 +270,56 @@ func _build_ui() -> void:
 	_panel_root.anchor_right = 1.0
 	_panel_root.anchor_top = 0.0
 	_panel_root.anchor_bottom = 1.0
-	_panel_root.offset_left = -360.0
+	_panel_root.offset_left = -380.0
 	_panel_root.offset_right = 0.0
 	add_child(_panel_root)
 
-	var bg := ColorRect.new()
-	bg.color = Color(0.03, 0.02, 0.05, 0.92)
+	# Panel(+StyleBoxFlat) instead of a flat ColorRect -- gives the docked
+	# sidebar a lit neon edge (left border) facing the game view, instead of
+	# a hard flat cut, without dragging in a texture/theme asset.
+	var bg := Panel.new()
+	var bg_style := StyleBoxFlat.new()
+	bg_style.bg_color = PANEL_BG_COLOR
+	bg_style.border_width_left = 3
+	bg_style.border_color = ACCENT_COLOR
+	bg.add_theme_stylebox_override("panel", bg_style)
 	bg.anchor_right = 1.0
 	bg.anchor_bottom = 1.0
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel_root.add_child(bg)
 
 	var title := Label.new()
 	title.text = "ADMIN PANEL (F5)"
 	title.add_theme_font_override("font", _font)
 	title.add_theme_font_size_override("font_size", 16)
-	title.add_theme_color_override("font_color", Color(1, 0.18, 0.66, 1))
-	title.offset_left = 8.0
+	title.add_theme_color_override("font_color", ACCENT_COLOR)
+	title.offset_left = 12.0
 	title.offset_top = 4.0
 	_panel_root.add_child(title)
+
+	# Thin lit rule under the title, same trick as _add_header's divider --
+	# separates "chrome" (title/close hint) from the tabbed content below.
+	var title_rule := ColorRect.new()
+	title_rule.color = Color(ACCENT_COLOR, 0.4)
+	title_rule.anchor_right = 1.0
+	title_rule.offset_left = 8.0
+	title_rule.offset_right = -8.0
+	title_rule.offset_top = 25.0
+	title_rule.offset_bottom = 26.0
+	title_rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_panel_root.add_child(title_rule)
 
 	var tabs := TabContainer.new()
 	tabs.anchor_right = 1.0
 	tabs.anchor_bottom = 1.0
 	tabs.offset_left = 4.0
 	tabs.offset_right = -4.0
-	tabs.offset_top = 28.0
+	tabs.offset_top = 30.0
 	tabs.offset_bottom = -4.0
 	tabs.tabs_rearrange_group = -1
+	tabs.add_theme_color_override("font_selected_color", ACCENT_COLOR)
+	tabs.add_theme_color_override("font_hovered_color", ACCENT_COLOR)
+	tabs.add_theme_color_override("font_unselected_color", Color(0.6, 0.58, 0.65, 0.85))
 	_panel_root.add_child(tabs)
 
 	var general_tab := _make_tab(tabs, "Общее")
@@ -247,19 +351,29 @@ func _build_ui() -> void:
 			_refresh_load_list()
 	)
 
+	## Player tab: one section per PLAYER_CATEGORY_LABELS entry (in that order),
+	## each opened with a header and holding only the rows tagged with that
+	## "cat" -- see the field's own doc comment on PLAYER_SLIDERS.
 	var player_tab := _make_tab(tabs, "Игрок")
-	for row in PLAYER_SLIDERS:
-		_add_slider(player_tab, row, "player", func(key: String, value: float): _apply_player_value(key, value))
+	for cat_key in PLAYER_CATEGORY_LABELS.keys():
+		_add_header(player_tab, PLAYER_CATEGORY_LABELS[cat_key])
+		for row in PLAYER_SLIDERS:
+			if row["cat"] == cat_key:
+				_add_slider(player_tab, row, "player", func(key: String, value: float): _apply_player_value(key, value))
 
 	var npc_combat_tab := _make_tab(tabs, "Враги - Бой")
-	for row in NPC_SLIDERS:
-		if row["cat"] == "combat":
-			_add_slider(npc_combat_tab, row, "npc", func(key: String, value: float): _apply_npc_override(key, value))
+	for sub_key in NPC_COMBAT_SUBCATEGORY_LABELS.keys():
+		_add_header(npc_combat_tab, NPC_COMBAT_SUBCATEGORY_LABELS[sub_key])
+		for row in NPC_SLIDERS:
+			if row["cat"] == "combat" and row["sub"] == sub_key:
+				_add_slider(npc_combat_tab, row, "npc", func(key: String, value: float): _apply_npc_override(key, value))
 
 	var npc_ai_tab := _make_tab(tabs, "Враги - ИИ")
-	for row in NPC_SLIDERS:
-		if row["cat"] == "ai":
-			_add_slider(npc_ai_tab, row, "npc", func(key: String, value: float): _apply_npc_override(key, value))
+	for sub_key in NPC_AI_SUBCATEGORY_LABELS.keys():
+		_add_header(npc_ai_tab, NPC_AI_SUBCATEGORY_LABELS[sub_key])
+		for row in NPC_SLIDERS:
+			if row["cat"] == "ai" and row["sub"] == sub_key:
+				_add_slider(npc_ai_tab, row, "npc", func(key: String, value: float): _apply_npc_override(key, value))
 
 	var audio_tab := _make_tab(tabs, "Звук")
 	_music_toggle = _add_toggle(audio_tab, "МУЗЫКА", MusicManager.music_enabled, func(v: bool): MusicManager.set_music_enabled(v))
@@ -284,19 +398,34 @@ func _make_tab(tabs: TabContainer, tab_title: String) -> VBoxContainer:
 	tabs.add_child(scroll)
 
 	var vbox := VBoxContainer.new()
-	vbox.custom_minimum_size = Vector2(330.0, 0.0)
+	vbox.custom_minimum_size = Vector2(350.0, 0.0)
 	vbox.add_theme_constant_override("separation", 10)
 	scroll.add_child(vbox)
 	return vbox
 
 
+## Marks the start of a new section (a category of sliders, or a plain
+## group of buttons/toggles). Adds a little extra headroom above itself
+## (skipped for the very first header in a tab, so sections don't start
+## with a dangling gap) plus a lit rule underneath so each section reads as
+## its own block instead of the whole tab being one undifferentiated list.
 func _add_header(vbox: VBoxContainer, text: String) -> void:
+	if vbox.get_child_count() > 0:
+		var spacer := Control.new()
+		spacer.custom_minimum_size = Vector2(0.0, 8.0)
+		vbox.add_child(spacer)
+
 	var lbl := Label.new()
-	lbl.text = text
+	lbl.text = "▍ " + text
 	lbl.add_theme_font_override("font", _font)
-	lbl.add_theme_font_size_override("font_size", 16)
-	lbl.add_theme_color_override("font_color", Color(1, 0.18, 0.66, 1))
+	lbl.add_theme_font_size_override("font_size", 15)
+	lbl.add_theme_color_override("font_color", ACCENT_COLOR)
 	vbox.add_child(lbl)
+
+	var rule := ColorRect.new()
+	rule.color = Color(ACCENT_COLOR, 0.3)
+	rule.custom_minimum_size = Vector2(0.0, 1.0)
+	vbox.add_child(rule)
 
 
 func _add_spawn_button(vbox: VBoxContainer) -> void:
@@ -414,7 +543,13 @@ func _add_slider(vbox: VBoxContainer, row: Dictionary, group: String, on_change:
 	slider.max_value = row["max"]
 	slider.step = row["step"]
 	slider.value = row["default"]
-	slider.custom_minimum_size = Vector2(300.0, 20.0)
+	slider.custom_minimum_size = Vector2(300.0, 22.0)
+	# Neon-filled pill track instead of the default flat gray Godot slider --
+	# the two StyleBoxFlats are shared across every slider in the panel (see
+	# _slider_track_style/_slider_fill_style), not allocated per-row.
+	slider.add_theme_stylebox_override("slider", _slider_track_style)
+	slider.add_theme_stylebox_override("grabber_area", _slider_fill_style)
+	slider.add_theme_stylebox_override("grabber_area_highlight", _slider_fill_style)
 	vbox.add_child(slider)
 
 	var refresh_label := func():
@@ -584,8 +719,11 @@ func _get_player() -> Node:
 func _apply_player_value(key: String, value: float) -> void:
 	_player_values[key] = value
 	var player := _get_player()
-	if player == null:
-		return
+	if player != null:
+		_apply_one_player_value(player, key, value)
+
+
+func _apply_one_player_value(player: Node, key: String, value: float) -> void:
 	match key:
 		"max_hp":
 			player.set_max_hp(value)
@@ -597,6 +735,17 @@ func _apply_player_value(key: String, value: float) -> void:
 			player.perfect_streak_for_bonus = int(value)
 		_:
 			player.set(key, value)
+
+
+## Called from player.gd's own _ready() -- without this, a player that spawns
+## AFTER sliders were already tuned this session (level switch, scene
+## restart, or just pressing F5 before a level was even loaded) would start
+## from the hardcoded class defaults instead of whatever's currently dialed
+## in on the panel, making the tuning silently vanish the moment the scene
+## reloads even though the sliders themselves looked like they worked.
+func apply_to_player(player: Node) -> void:
+	for key in _player_values.keys():
+		_apply_one_player_value(player, key, _player_values[key])
 
 
 func _apply_npc_override(key: String, value: float) -> void:
@@ -615,6 +764,16 @@ func _apply_one_npc_value(enemy: Node, key: String, value: float) -> void:
 			enemy.set(key, value)
 
 
+## Called from samurai_npc.gd's own _ready() -- covers enemies placed directly
+## in a level scene (not spawned via the SPAWN button, which already stamps
+## _npc_overrides on) so they also pick up whatever's currently tuned instead
+## of resetting to hardcoded defaults on every level load. Same reasoning as
+## apply_to_player above.
+func apply_to_enemy(enemy: Node) -> void:
+	for key in _npc_overrides.keys():
+		_apply_one_npc_value(enemy, key, _npc_overrides[key])
+
+
 func _spawn_npc() -> void:
 	var player := _get_player()
 	if player == null:
@@ -629,8 +788,7 @@ func _spawn_npc() -> void:
 	var parent: Node = level if level else get_tree().current_scene
 	parent.add_child(enemy)
 
-	for key in _npc_overrides.keys():
-		_apply_one_npc_value(enemy, key, _npc_overrides[key])
+	apply_to_enemy(enemy)
 
 	if level and level.has_method("register_enemy"):
 		level.register_enemy(enemy)

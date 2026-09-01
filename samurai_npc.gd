@@ -7,6 +7,21 @@ const STACK_UNSTICK_DURATION := 0.15
 ## bubble types out -- see _on_bubble_letter_spoken().
 const TEXT_SFX := preload("res://Audio/Text Fx/text2.mp3")
 
+## Katana Zero-style detection cues, flashed above this NPC's head via
+## _flash_alert_icon() -- see the Suspicion export group and _start_attack().
+const ICON_SUSPICIOUS := "?"
+const ICON_SPOTTED := "!?"
+const ICON_ATTACK := "!"
+## Muted purple -- matches level.gd's ACCENT_MUTED text color (uncertain, not
+## yet a real threat).
+const ICON_COLOR_SUSPICIOUS := Color(0.62, 0.42, 0.62, 1)
+## Matches speech_bubble_color / level.gd's ACCENT_COLOR -- same neon pink
+## used for "something just happened" across the project.
+const ICON_COLOR_SPOTTED := Color(1, 0.18, 0.66, 1)
+## Matches level.gd's death-screen red -- reused here as the "danger, about
+## to hit you" color.
+const ICON_COLOR_ATTACK := Color(0.92, 0.15, 0.15, 1)
+
 @export_group("Intro Line")
 ## Shown once via DialogueManager the first time this NPC spots the player --
 ## see _show_intro_line(). Fetched as plain text (get_next_dialogue_line, not
@@ -27,6 +42,17 @@ const TEXT_SFX := preload("res://Audio/Text Fx/text2.mp3")
 ## Matches level.gd's ACCENT_COLOR -- same neon-pink accent used across the
 ## pause/death/victory screens.
 @export var speech_bubble_color: Color = Color(1, 0.18, 0.66, 1)
+
+@export_group("Alert Icon")
+## Vertical offset for the "?" / "!?" / "!" cue -- kept above the health bar
+## (health bar sits at y = -24) so they never overlap.
+@export var alert_icon_offset_y: float = -42.0
+## How long the icon stays fully visible before fading -- see
+## _flash_alert_icon(). Matches Katana Zero's quick flash-then-gone read
+## rather than a persistent status icon.
+@export var alert_icon_hold_duration: float = 0.6
+@export var alert_icon_fade_duration: float = 0.25
+@export var alert_icon_font_size: int = 22
 
 ## Utility-scored combat actions -- see _score_action(). Only considered
 ## while _aware (see _update_memory); patrol and the reactive systems
@@ -75,6 +101,13 @@ const DEATH_SOUNDS := [
 	preload("res://Audio/Death Fx/Death_fx_npc-dead2.wav"),
 ]
 
+## No blood sprite asset exists yet -- spray and decals are both drawn
+## procedurally (particles / generated blob polygons) rather than textured,
+## so this works today and can be swapped for real art later without
+## touching the spawn logic.
+const BLOOD_SPRAY_COLOR := Color(0.5, 0.02, 0.04, 0.95)
+const BLOOD_DECAL_COLOR := Color(0.35, 0.02, 0.03, 0.85)
+
 @export var move_speed: float = 140.0
 ## Range of the vision cone below -- also just "how far this NPC can
 ## notice the player at all", same role detect_range always had.
@@ -84,6 +117,10 @@ const DEATH_SOUNDS := [
 ## outside the cone (e.g. behind an NPC facing the other way) goes unnoticed
 ## even within detect_range.
 @export var vision_angle_degrees: float = 55.0
+## Shrinks detect_range/suspicion_range by this factor while the player is
+## holding the stealth-walk action (player.gd's is_walking) -- see
+## _effective_range() below. 1.0 would make walking quietly pointless.
+@export var stealth_range_multiplier: float = 0.5
 ## Seconds an already-noticed player is still tracked (headed toward, via
 ## _last_known_player_pos) after leaving the vision cone -- see
 ## _update_memory(). Without this an NPC forgets the instant the player
@@ -91,6 +128,22 @@ const DEATH_SOUNDS := [
 ## face the last-known spot and keeps going there, only giving up and
 ## returning to patrol once this runs out without re-spotting them.
 @export var memory_duration: float = 3.0
+
+@export_group("Suspicion")
+## Wider version of detect_range used only for the pre-detection "?" cue --
+## see _can_sense_player_peripherally(). Represents noticing something's off
+## before actually spotting the player (Katana Zero's "?" icon).
+@export var suspicion_range: float = 340.0
+## Wider version of vision_angle_degrees for the same peripheral check.
+@export var suspicion_angle_degrees: float = 110.0
+## Seconds the player must keep triggering the peripheral check before this
+## NPC fully spots them (upgrades straight to _aware, same as an ordinary
+## sighting -- see _update_suspicion()).
+@export var suspicion_confirm_time: float = 0.8
+## Seconds of NOT triggering the peripheral check before the suspicion meter
+## resets to zero instead of carrying over from an old, unrelated glimpse.
+@export var suspicion_decay_time: float = 0.5
+
 ## The instant this NPC newly notices the player (not every frame -- only
 ## the rising edge), it alerts every other enemy within this range: they
 ## become _aware and head toward the same _last_known_player_pos even
@@ -125,6 +178,15 @@ const DEATH_SOUNDS := [
 @export var sweet_spot_ratio: float = 0.35
 @export var sweet_spot_damage_multiplier: float = 1.5
 @export var late_hit_damage_multiplier: float = 0.75
+
+@export_group("Blood")
+## Particles in the one-shot burst on death, sprayed away from whichever
+## side the player was standing on (see _spawn_blood_effects).
+@export var blood_spray_amount: int = 18
+## How many splat decals land per death -- kept low and un-pooled on
+## purpose (see _spawn_blood_decals doc comment): this is a foundation to
+## build on, not a full accumulating-gore system yet.
+@export var blood_decal_count: int = 4
 
 @export var max_hp: float = 3.0
 @export var jump_gravity: float = 900.0
@@ -262,6 +324,17 @@ var _memory_timer := 0.0
 ## to a single showing per NPC instance instead of replaying it on every
 ## re-detection after the player breaks line of sight.
 var _intro_line_played := false
+## See suspicion_confirm_time / _update_suspicion() -- builds while the
+## player is within the wider peripheral zone but not yet _aware, and drives
+## the "?" cue. Resets the instant _aware becomes true (see _update_memory).
+var _is_suspicious := false
+var _suspicion_timer := 0.0
+var _suspicion_decay_timer := 0.0
+## Currently-flashing "?" / "!?" / "!" label, if any -- see
+## _flash_alert_icon(). Tracked so a new flash can cancel/replace one still
+## fading out instead of stacking two labels on top of each other.
+var _alert_icon_label: Label = null
+var _alert_icon_tween: Tween = null
 var _stuck_timer := 0.0
 ## True only for frames where _chase_across_terrain actually committed to
 ## walking (or jumping) toward the search target -- as opposed to holding
@@ -274,8 +347,10 @@ var _attempting_search_move := false
 
 func _ready() -> void:
 	sprite.animation_finished.connect(_on_animation_finished)
-	current_hp = max_hp
 	_hp_bar_full_width = hp_fill.size.x
+	# Covers enemies placed directly in a level scene (spawned ones already
+	# get this via AdminPanel._spawn_npc) -- see AdminPanel.apply_to_enemy.
+	AdminPanel.apply_to_enemy(self)
 	_player = get_tree().get_first_node_in_group("player")
 	_spawn_position = global_position
 	_pick_new_patrol_target()
@@ -415,15 +490,55 @@ func _update_memory(seeing: bool, delta: float) -> void:
 		_aware = true
 		_last_known_player_pos = _player.global_position
 		_memory_timer = memory_duration
+		_is_suspicious = false
+		_suspicion_timer = 0.0
 		if not was_aware:
-			_alert_nearby_allies()
-			if not _intro_line_played:
-				_intro_line_played = true
-				_show_intro_line()
+			_on_newly_aware()
 	elif _aware:
 		_memory_timer = maxf(_memory_timer - delta, 0.0)
 		if _memory_timer <= 0.0:
 			_aware = false
+	else:
+		_update_suspicion(delta)
+
+
+## Fires once on the rising edge of _aware, whether that came from an
+## ordinary sighting (_update_memory) or a confirmed suspicion meter
+## (_update_suspicion) -- both count as "just spotted the player" and get
+## the same "!?" cue, ally alert, and one-time intro line.
+func _on_newly_aware() -> void:
+	_flash_alert_icon(ICON_SPOTTED, ICON_COLOR_SPOTTED)
+	_alert_nearby_allies()
+	if not _intro_line_played:
+		_intro_line_played = true
+		_show_intro_line()
+
+
+## Pre-detection build-up: while not yet _aware, checks a wider peripheral
+## zone (suspicion_range/suspicion_angle_degrees) than the real vision cone.
+## Staying in it for suspicion_confirm_time upgrades straight to a genuine
+## sighting (same as _update_memory's seeing branch); stepping out of it for
+## suspicion_decay_time resets the meter, so a single passing glimpse doesn't
+## linger forever. Katana Zero's "?" cue.
+func _update_suspicion(delta: float) -> void:
+	if _can_sense_player_peripherally():
+		_suspicion_decay_timer = suspicion_decay_time
+		if not _is_suspicious:
+			_is_suspicious = true
+			_flash_alert_icon(ICON_SUSPICIOUS, ICON_COLOR_SUSPICIOUS)
+		_suspicion_timer += delta
+		if _suspicion_timer >= suspicion_confirm_time:
+			_is_suspicious = false
+			_suspicion_timer = 0.0
+			_aware = true
+			_last_known_player_pos = _player.global_position
+			_memory_timer = memory_duration
+			_on_newly_aware()
+	else:
+		_suspicion_decay_timer = maxf(_suspicion_decay_timer - delta, 0.0)
+		if _suspicion_decay_timer <= 0.0 and _is_suspicious:
+			_is_suspicious = false
+			_suspicion_timer = 0.0
 
 
 ## Fires once, the instant this NPC newly spots the player -- passes the
@@ -483,7 +598,7 @@ func _can_see_player() -> bool:
 		return false
 	var to_player: Vector2 = _player.global_position - global_position
 	var distance := to_player.length()
-	if distance > detect_range:
+	if distance > _effective_range(detect_range):
 		return false
 	# Point-blank bypass: as distance shrinks toward zero, even a tiny Y gap
 	# (collision shape height, hitbox offset, uneven ground) pushes the
@@ -497,6 +612,33 @@ func _can_see_player() -> bool:
 	var facing := Vector2(-1.0 if sprite.flip_h else 1.0, 0.0)
 	var angle_deg := absf(rad_to_deg(facing.angle_to(to_player)))
 	return angle_deg <= vision_angle_degrees / 2.0
+
+
+## Same shape as _can_see_player() but against the wider suspicion_range/
+## suspicion_angle_degrees -- feeds _update_suspicion() only, never gates
+## actual combat behavior on its own.
+func _can_sense_player_peripherally() -> bool:
+	if _player == null:
+		return false
+	var to_player: Vector2 = _player.global_position - global_position
+	var distance := to_player.length()
+	if distance > _effective_range(suspicion_range):
+		return false
+	if distance <= attack_range:
+		return true
+	var facing := Vector2(-1.0 if sprite.flip_h else 1.0, 0.0)
+	var angle_deg := absf(rad_to_deg(facing.angle_to(to_player)))
+	return angle_deg <= suspicion_angle_degrees / 2.0
+
+
+## Shrinks a vision/suspicion range by stealth_range_multiplier while the
+## player is deliberately moving quietly (player.gd's is_walking) -- read via
+## get() rather than a typed reference since samurai_npc.gd has no compile-time
+## dependency on the player script.
+func _effective_range(base_range: float) -> float:
+	if _player != null and bool(_player.get("is_walking")):
+		return base_range * stealth_range_multiplier
+	return base_range
 
 
 ## Utility scoring over the combat actions this NPC can choose between on a
@@ -882,6 +1024,7 @@ func _start_attack() -> void:
 	_attack_active_time = _attack_start_time + attack_startup
 	_attack_parried = false
 	_damage_resolved = false
+	_flash_alert_icon(ICON_ATTACK, ICON_COLOR_ATTACK)
 	_play_sfx(sfx_attack, ATTACK_SOUNDS[_attack_sound_index])
 	_attack_sound_index = 1 - _attack_sound_index
 	sprite.play("attack")
@@ -1053,6 +1196,45 @@ func _spawn_speech_bubble(line: DialogueLine) -> void:
 	tween.tween_callback(label.queue_free)
 
 
+## Katana Zero-style detection cue: "?" / "!?" / "!" popping in above this
+## NPC's head, held briefly, then fading -- see the Alert Icon export group.
+## A new call cancels/replaces one still fading out rather than stacking a
+## second label, so rapid state changes (suspicious -> spotted -> attacking)
+## always show only the latest cue.
+func _flash_alert_icon(text: String, color: Color) -> void:
+	if _alert_icon_tween != null and _alert_icon_tween.is_valid():
+		_alert_icon_tween.kill()
+	if is_instance_valid(_alert_icon_label):
+		_alert_icon_label.queue_free()
+
+	var font := SystemFont.new()
+	font.font_names = PackedStringArray(["Consolas", "Courier New", "Lucida Console", "monospace"])
+
+	var label := Label.new()
+	label.text = text
+	label.add_theme_font_override("font", font)
+	label.add_theme_font_size_override("font_size", alert_icon_font_size)
+	label.add_theme_color_override("font_color", color)
+	label.add_theme_color_override("font_outline_color", Color(0.02, 0.01, 0.03, 0.95))
+	label.add_theme_constant_override("outline_size", 6)
+	label.z_index = 10
+	label.position = Vector2(-10.0, alert_icon_offset_y)
+	label.pivot_offset = Vector2(10.0, alert_icon_font_size * 0.5)
+	label.modulate.a = 0.0
+	label.scale = Vector2(0.6, 0.6)
+	add_child(label)
+	_alert_icon_label = label
+
+	var tween := create_tween()
+	_alert_icon_tween = tween
+	tween.tween_property(label, "modulate:a", 1.0, 0.08)
+	tween.parallel().tween_property(label, "scale", Vector2.ONE, 0.08) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_interval(alert_icon_hold_duration)
+	tween.tween_property(label, "modulate:a", 0.0, alert_icon_fade_duration)
+	tween.tween_callback(label.queue_free)
+
+
 ## Skips whitespace so word gaps don't produce a spurious blip between words.
 func _on_bubble_letter_spoken(letter: String, _letter_index: int, _speed: float) -> void:
 	if letter.strip_edges() == "":
@@ -1101,6 +1283,7 @@ func _die() -> void:
 	_is_dead = true
 	_is_attacking = false
 	sprite.play("hurt")
+	_spawn_blood_effects()
 	_spawn_death_sound()
 	died.emit()
 	await get_tree().create_timer(0.4).timeout
@@ -1117,3 +1300,110 @@ func _spawn_death_sound() -> void:
 	get_parent().add_child(p)
 	p.play()
 	p.finished.connect(p.queue_free)
+
+
+## Katana Zero-style blood: a directional particle burst plus a handful of
+## splatter decals that stay on the level after this NPC is gone. Sprayed
+## away from wherever the player is standing (no attacker reference is
+## threaded through take_damage()/_die(), so this is an approximation, not
+## the exact hit direction) -- good enough since the player is overwhelmingly
+## the thing killing this NPC.
+func _spawn_blood_effects() -> void:
+	var dir_x := 1.0 if sprite.flip_h else -1.0
+	if _player:
+		var to_player_x: float = _player.global_position.x - global_position.x
+		if to_player_x != 0.0:
+			dir_x = -signf(to_player_x)
+	_spawn_blood_spray(dir_x)
+	_spawn_blood_decals()
+
+
+## One-shot CPUParticles2D, spawned as a sibling on the level (not a child
+## of this NPC, same reasoning as _spawn_death_sound) so it survives this
+## NPC's own queue_free(). Self-removes once its burst has fully played out.
+func _spawn_blood_spray(dir_x: float) -> void:
+	var p := CPUParticles2D.new()
+	p.emitting = false
+	p.one_shot = true
+	p.amount = blood_spray_amount
+	p.lifetime = 0.5
+	p.explosiveness = 0.9
+	p.direction = Vector2(dir_x, -0.3).normalized()
+	p.spread = 40.0
+	p.initial_velocity_min = 60.0
+	p.initial_velocity_max = 220.0
+	p.gravity = Vector2(0, 700)
+	p.scale_amount_min = 1.5
+	p.scale_amount_max = 3.0
+	p.color = BLOOD_SPRAY_COLOR
+	p.global_position = global_position
+	get_parent().add_child(p)
+	p.restart()
+	p.emitting = true
+	get_tree().create_timer(p.lifetime + 0.1).timeout.connect(p.queue_free)
+
+
+## Splatter decals: small irregular blobs (see _make_blood_blob) scattered
+## near the death point, added to the level and never freed -- they're meant
+## to accumulate over a level the way Katana Zero's do. Snapped onto the
+## actual floor/wall surface below the death point (see _find_ground_below)
+## rather than placed at this NPC's own global_position -- a kill often
+## lands mid-air (jump attacks, edge fights), so anchoring to the body's own
+## height put decals floating well above the platform they should be sitting
+## on, reading as "blood just falls off into nothing" instead of pooling on
+## the ground. Deliberately no cap or pooling yet: this is the foundation for
+## the mechanic, not the full system -- if a level's kill count ever gets
+## high enough for this to be a real perf/visual-noise concern, add a
+## running total on the level and trim the oldest decals past some limit.
+func _spawn_blood_decals() -> void:
+	var ground_y := _find_ground_below(global_position)
+	if is_nan(ground_y):
+		return  # Died over a pit/gap -- no solid surface to paint blood onto.
+
+	var level := get_parent()
+	for i in blood_decal_count:
+		var decal := Polygon2D.new()
+		var blob_radius := randf_range(6.0, 14.0)
+		decal.polygon = _make_blood_blob(blob_radius)
+		decal.color = BLOOD_DECAL_COLOR
+		# Lifted up by roughly half the blob's own radius so it visually
+		# rests ON the surface instead of being centered exactly on the
+		# ray-hit point, which would sink half of it into the floor.
+		decal.position = Vector2(global_position.x + randf_range(-20.0, 20.0), ground_y - blob_radius * 0.5)
+		decal.rotation = randf_range(0.0, TAU)
+		decal.z_index = -1
+		level.add_child(decal)
+
+
+## Straight raycast down from a point to the nearest solid floor/wall
+## surface (collision_mask 4 -- walls/floor only, same convention as
+## _has_ground_ahead/_has_safe_landing_ahead), capped at this level's
+## death_y so it doesn't probe forever over a bottomless pit. Returns the Y
+## of the hit surface, or NAN if nothing solid was found in range.
+func _find_ground_below(from_position: Vector2) -> float:
+	# death_y is left at INF outside a real level (see the @export doc
+	# comment on it) -- fall back to a generous fixed probe depth instead of
+	# an infinite/absurd one.
+	var probe_depth: float = (death_y - from_position.y) if is_finite(death_y) else 2000.0
+	if probe_depth <= 0.0:
+		return NAN
+	var space := get_world_2d().direct_space_state
+	var query := PhysicsRayQueryParameters2D.create(from_position, from_position + Vector2(0.0, probe_depth))
+	query.collision_mask = 4
+	query.exclude = [get_rid()]
+	var result := space.intersect_ray(query)
+	if result.is_empty():
+		return NAN
+	return result.position.y
+
+
+## Irregular blob polygon (not a perfect circle) so a cluster of decals
+## reads as an organic splatter instead of a row of uniform dots.
+func _make_blood_blob(radius: float) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	var vertex_count := 8
+	for i in vertex_count:
+		var angle := TAU * i / vertex_count
+		var r := radius * randf_range(0.7, 1.15)
+		points.append(Vector2(cos(angle), sin(angle)) * r)
+	return points

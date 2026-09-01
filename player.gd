@@ -48,6 +48,10 @@ extends CharacterBody2D
 ## jump's arc still feels committed instead of fully steerable mid-air.
 @export var air_acceleration: float = 1800.0
 @export var air_friction: float = 1400.0
+## Fraction of move_speed used while holding the "walk" action (stealth
+## mode) -- see is_walking. Also picks the dedicated "walk" animation over
+## "run" in _update_movement_animation.
+@export var walk_speed_ratio: float = 0.45
 
 @export_group("Wall Movement")
 ## Downward speed clamp while actively sliding down a wall -- much slower
@@ -200,7 +204,6 @@ signal died
 signal parried
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
-@onready var hp_fill: ColorRect = $HealthBar/Fill
 @onready var camera: Camera2D = $Camera2D
 @onready var dash_smoke: CPUParticles2D = _make_dash_smoke()
 @onready var landing_dust: CPUParticles2D = _make_landing_dust()
@@ -216,7 +219,6 @@ var _camera_dip_y := 0.0
 var _squash_tween: Tween
 
 var current_hp: float
-var _hp_bar_full_width: float
 var parries_count := 0
 
 var parry_charges: int
@@ -227,6 +229,11 @@ var _next_hit_bonus := false
 
 var _is_attacking := false
 var _is_dead := false
+## True while grounded and holding the "walk" action -- moves at
+## walk_speed_ratio instead of full move_speed. Public (no underscore)
+## because samurai_npc.gd reads it via get() to shrink its detection range
+## against a player who's deliberately moving quietly.
+var is_walking := false
 ## Read by level.gd's _on_player_died() to pick the right telemetry reason.
 var death_reason := "defeated_by_enemy"
 
@@ -324,8 +331,10 @@ func _enter_state(to: PlayerState) -> void:
 
 func _ready() -> void:
 	sprite.animation_finished.connect(_on_animation_finished)
-	current_hp = max_hp
-	_hp_bar_full_width = hp_fill.size.x
+	# Picks up whatever's currently dialed in on the admin panel -- without
+	# this a player spawning after a level switch/restart would silently
+	# reset to the hardcoded class defaults instead (see AdminPanel.apply_to_player).
+	AdminPanel.apply_to_player(self)
 	parry_charges = max_parry_charges
 	if _walk_sound is AudioStreamWAV:
 		_walk_sound.loop_mode = AudioStreamWAV.LOOP_FORWARD
@@ -373,6 +382,7 @@ func _physics_process(delta: float) -> void:
 		_update_attack_active_window(delta)
 
 	var move_input := Input.get_axis("move_left", "move_right")
+	is_walking = was_on_floor and Input.is_action_pressed("walk")
 
 	_check_double_tap_dash(move_input)
 
@@ -463,7 +473,7 @@ func _physics_process(delta: float) -> void:
 	elif _is_attacking:
 		velocity.x = 0.0
 	else:
-		var target_speed_x := move_input * move_speed
+		var target_speed_x := move_input * move_speed * (walk_speed_ratio if is_walking else 1.0)
 		var rate: float
 		if was_on_floor:
 			rate = ground_acceleration if move_input != 0.0 else ground_friction
@@ -555,6 +565,10 @@ func _start_attack() -> void:
 	var anim := "attack" if _attack_index == 0 else "attack2"
 	_play_sfx(sfx_attack, ATTACK_SOUNDS[_attack_index])
 	_attack_index = 1 - _attack_index
+	# _update_movement_animation (which owns speed_scale) never runs while
+	# _is_attacking, so a walk-slowed speed_scale from the frame before would
+	# otherwise stick and play the swing itself in slow motion.
+	sprite.speed_scale = 1.0
 	sprite.play(anim)
 	if sfx_walk.playing:
 		sfx_walk.stop()
@@ -655,7 +669,6 @@ func set_max_hp(value: float) -> void:
 	max_hp = value
 	current_hp = max_hp
 	hp_changed.emit(current_hp, max_hp)
-	hp_fill.size.x = _hp_bar_full_width
 
 
 ## A hit only counts as a parry-eligible clash if the enemy's OWN swing could
@@ -842,6 +855,7 @@ func _update_movement_animation(move_input: float) -> void:
 		sprite.flip_h = move_input < 0.0
 
 	if not is_on_floor():
+		sprite.speed_scale = 1.0
 		if velocity.y < 0.0:
 			if sprite.animation != "jump":
 				sprite.play("jump")
@@ -851,7 +865,11 @@ func _update_movement_animation(move_input: float) -> void:
 			sfx_walk.stop()
 		return
 
-	sprite.play("run" if move_input != 0.0 else "idle")
+	if move_input != 0.0:
+		sprite.play("walk" if is_walking else "run")
+	else:
+		sprite.play("idle")
+	sprite.speed_scale = 1.0
 	# Walk loop plays only while actually moving on the ground -- not
 	# during attacks/dashes/airborne (those branches never reach here).
 	if move_input != 0.0:
@@ -888,7 +906,8 @@ func _start_dash(dir_x: float) -> void:
 	_afterimage_timer = 0.0
 	_afterimage_count = 0
 	_enter_phase()
-	sprite.play("run")
+	sprite.speed_scale = 1.0
+	sprite.play("dash")
 	dash_smoke.restart()
 	dash_smoke.emitting = true
 	if sfx_walk.playing:
@@ -1137,7 +1156,6 @@ func take_damage(amount: float) -> bool:
 
 	current_hp = max(current_hp - amount, 0.0)
 	hp_changed.emit(current_hp, max_hp)
-	hp_fill.size.x = _hp_bar_full_width * (current_hp / max_hp)
 	if current_hp <= 0.0:
 		_die()
 	else:
@@ -1153,5 +1171,9 @@ func _die() -> void:
 	_is_attacking = false
 	if sfx_walk.playing:
 		sfx_walk.stop()
+	# _is_dead short-circuits _physics_process before _update_movement_animation
+	# ever runs again, so a stale walk speed_scale would otherwise play the
+	# death animation in slow motion for good.
+	sprite.speed_scale = 1.0
 	sprite.play("death")
 	died.emit()

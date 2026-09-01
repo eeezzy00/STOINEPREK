@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://br1j4tln534tq" path="res://level.gd" id="0_level_script"]
 [ext_resource type="PackedScene" uid="uid://dxcx53y53g05k" path="res://player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://samurai_npc.tscn" id="2_samurai_npc"]
+[ext_resource type="PackedScene" path="res://vospitan_npc.tscn" id="3_vospitan_npc"]
 [ext_resource type="Texture2D" uid="uid://wt2hpqups2bp" path="res://background/city 1/1.png" id="bg_1"]
 [ext_resource type="Texture2D" uid="uid://bdqdt3ldbavxu" path="res://background/city 1/2.png" id="bg_2"]
 [ext_resource type="Texture2D" uid="uid://b7fhg7b82egic" path="res://background/city 1/3.png" id="bg_3"]
@@ -187,3 +188,6 @@ scale = Vector2(1.55, 1.55)
 
 [node name="Player" parent="." unique_id=929472162 instance=ExtResource("1_player")]
 position = Vector2(617, 704)
+
+[node name="Vospitan" parent="." instance=ExtResource("3_vospitan_npc")]
+position = Vector2(760, 704)

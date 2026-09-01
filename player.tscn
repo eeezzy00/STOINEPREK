@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dnhb4exl1f4bw" path="res://player.gd" id="1_script"]
 [ext_resource type="Script" uid="uid://bjolo1nq11ufy" path="res://debug_hud.gd" id="debug_hud_script"]
+[ext_resource type="Script" uid="uid://di4yx2k17vt4" path="res://player_hud.gd" id="player_hud_script"]
 [ext_resource type="SpriteFrames" uid="uid://b5m4q2whc0esv" path="res://player_sprite_frames.tres" id="sprite_frames_res"]
 
 [sub_resource type="RectangleShape2D" id="shape_player"]
@@ -36,22 +37,8 @@ drag_horizontal_enabled = true
 drag_left_margin = 0.3
 drag_right_margin = 0.3
 
-[node name="HealthBar" type="Node2D" parent="." unique_id=1000233757]
-position = Vector2(0, -30)
-
-[node name="Back" type="ColorRect" parent="HealthBar" unique_id=1246272676]
-offset_left = -20.0
-offset_top = -10.0
-offset_right = 20.0
-offset_bottom = -4.0
-color = Color(0.08, 0.06, 0.07, 0.85)
-
-[node name="Fill" type="ColorRect" parent="HealthBar" unique_id=1595042777]
-offset_left = -20.0
-offset_top = -10.0
-offset_right = 20.0
-offset_bottom = -4.0
-color = Color(0.78, 0.16, 0.16, 1)
+[node name="PlayerHUD" type="CanvasLayer" parent="." unique_id=1789234561]
+script = ExtResource("player_hud_script")
 
 [node name="DebugHUD" type="CanvasLayer" parent="." unique_id=57239451]
 script = ExtResource("debug_hud_script")

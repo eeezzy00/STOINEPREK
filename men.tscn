@@ -2,8 +2,13 @@
 
 [ext_resource type="Script" uid="uid://b6stpb6484kv" path="res://men.gd" id="1_m7n7p"]
 [ext_resource type="Material" uid="uid://bkgvufqny5mtt" path="res://shaders/crt_overlay_mat.tres" id="2_x55vd"]
-[ext_resource type="Texture2D" uid="uid://c0utn2wsmhqnv" path="res://assets/Martial Hero/Sprites/Run.png" id="5_run"]
 [ext_resource type="FontFile" uid="uid://c472inn0oog1u" path="res://assets/fonts/pixel_ui.fnt" id="8_pixelfont"]
+[ext_resource type="Texture2D" uid="uid://bhc1smg1eqak2" path="res://assets/MYASSETS/main menu/not selected/NEWGAME41.png" id="9_ng_idle"]
+[ext_resource type="Texture2D" uid="uid://w8oxclsah5rk" path="res://assets/MYASSETS/main menu/not selected/continue.png" id="11_cont_idle"]
+[ext_resource type="Texture2D" uid="uid://dq3mo5eojjaso" path="res://assets/MYASSETS/main menu/not selected/SETTINGS3.png" id="13_set_idle"]
+[ext_resource type="Texture2D" uid="uid://b7ima1rvge73i" path="res://assets/MYASSETS/main menu/not selected/EXIT3.png" id="15_exit_idle"]
+[ext_resource type="AudioStream" uid="uid://cenerb0vw3k41" path="res://assets/MYASSETS/main menu/sound selection/Hovered/MENUSELECT.mp3" id="17_sfx_hover"]
+[ext_resource type="AudioStream" uid="uid://df15tlwlj11xa" path="res://assets/MYASSETS/main menu/sound selection/click/MENUSELECTAPPLY.mp3" id="18_sfx_click"]
 
 [sub_resource type="Theme" id="Theme_terminal"]
 Button/colors/font_shadow_color = Color(0.878, 0.251, 0.984, 0.9)
@@ -17,74 +22,18 @@ Label/constants/shadow_offset_y = 0
 Label/constants/shadow_outline_size = 3
 Label/fonts/font = ExtResource("8_pixelfont")
 
-[sub_resource type="AtlasTexture" id="run_0"]
-atlas = ExtResource("5_run")
-region = Rect2(0, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="run_1"]
-atlas = ExtResource("5_run")
-region = Rect2(200, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="run_2"]
-atlas = ExtResource("5_run")
-region = Rect2(400, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="run_3"]
-atlas = ExtResource("5_run")
-region = Rect2(600, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="run_4"]
-atlas = ExtResource("5_run")
-region = Rect2(800, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="run_5"]
-atlas = ExtResource("5_run")
-region = Rect2(1000, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="run_6"]
-atlas = ExtResource("5_run")
-region = Rect2(1200, 0, 200, 200)
-
-[sub_resource type="AtlasTexture" id="run_7"]
-atlas = ExtResource("5_run")
-region = Rect2(1400, 0, 200, 200)
-
-[sub_resource type="SpriteFrames" id="frames_menu_runner"]
-animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("run_0")
-}, {
-"duration": 1.0,
-"texture": SubResource("run_1")
-}, {
-"duration": 1.0,
-"texture": SubResource("run_2")
-}, {
-"duration": 1.0,
-"texture": SubResource("run_3")
-}, {
-"duration": 1.0,
-"texture": SubResource("run_4")
-}, {
-"duration": 1.0,
-"texture": SubResource("run_5")
-}, {
-"duration": 1.0,
-"texture": SubResource("run_6")
-}, {
-"duration": 1.0,
-"texture": SubResource("run_7")
-}],
-"loop": 1,
-"name": &"run",
-"speed": 12.0
-}]
-
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_flat"]
 
 [node name="Men" type="Node2D" unique_id=986255089]
 script = ExtResource("1_m7n7p")
+
+[node name="SfxHover" type="AudioStreamPlayer" parent="." unique_id=2063146670]
+stream = ExtResource("17_sfx_hover")
+bus = &"SFX"
+
+[node name="SfxClick" type="AudioStreamPlayer" parent="." unique_id=870966079]
+stream = ExtResource("18_sfx_click")
+bus = &"SFX"
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=2038607404]
 
@@ -107,7 +56,7 @@ grow_vertical = 2
 color = Color(0.015, 0.015, 0.02, 1)
 metadata/_edit_use_anchors_ = true
 
-[node name="BetaLabel" type="Label" parent="CanvasLayer/UI" unique_id=401570887]
+[node name="AlphaLabel" type="Label" parent="CanvasLayer/UI" unique_id=401570887]
 layout_mode = 0
 offset_left = 24.0
 offset_top = 14.0
@@ -116,31 +65,26 @@ offset_bottom = 34.0
 theme_override_colors/font_color = Color(0.4, 0.36, 0.44, 1)
 theme_override_constants/shadow_outline_size = 0
 theme_override_font_sizes/font_size = 14
-text = "BETA 0.01"
-
-[node name="Runner" type="AnimatedSprite2D" parent="CanvasLayer/UI" unique_id=1012294124]
-modulate = Color(0.878, 0.251, 0.984, 1)
-position = Vector2(760.99994, 317)
-scale = Vector2(9.199999, 9.41)
-sprite_frames = SubResource("frames_menu_runner")
-animation = &"run"
-autoplay = "run"
+text = "ALPHA 0.01"
 
 [node name="MenuList" type="VBoxContainer" parent="CanvasLayer/UI" unique_id=1574563084]
 layout_mode = 1
 anchors_preset = -1
-anchor_top = 0.42
-anchor_bottom = 0.92
-offset_left = 425.0
-offset_top = -101.16
-offset_right = 746.0
-offset_bottom = 160.83997
-theme_override_constants/separation = 18
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -117.0
+offset_top = -248.0
+offset_right = 117.0
+offset_bottom = 248.0
+theme_override_constants/separation = 8
 
 [node name="NewGame" type="Button" parent="CanvasLayer/UI/MenuList" unique_id=1094525694]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(320.445, 36)
+custom_minimum_size = Vector2(234, 118)
 layout_mode = 2
+size_flags_horizontal = 0
 theme_override_colors/font_color = Color(0.5, 0.16, 0.58, 1)
 theme_override_colors/font_focus_color = Color(0.878, 0.251, 0.984, 1)
 theme_override_colors/font_pressed_color = Color(1, 0.85, 0.95, 1)
@@ -151,12 +95,25 @@ theme_override_styles/pressed = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_flat")
-text = "NEW GAME"
 alignment = 0
+
+[node name="Icon" type="TextureRect" parent="CanvasLayer/UI/MenuList/NewGame" unique_id=106933791]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("9_ng_idle")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Continue" type="Button" parent="CanvasLayer/UI/MenuList" unique_id=1898679074]
-custom_minimum_size = Vector2(320, 36)
+unique_name_in_owner = true
+custom_minimum_size = Vector2(234, 118)
 layout_mode = 2
+size_flags_horizontal = 0
 theme_override_colors/font_color = Color(0.5, 0.16, 0.58, 1)
 theme_override_colors/font_focus_color = Color(0.878, 0.251, 0.984, 1)
 theme_override_colors/font_pressed_color = Color(1, 0.85, 0.95, 1)
@@ -169,30 +126,25 @@ theme_override_styles/hover = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_flat")
 disabled = true
-text = "CONTINUE"
 alignment = 0
 
-[node name="Speedrun" type="Button" parent="CanvasLayer/UI/MenuList" unique_id=323612471]
-custom_minimum_size = Vector2(320, 36)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.5, 0.16, 0.58, 1)
-theme_override_colors/font_focus_color = Color(0.878, 0.251, 0.984, 1)
-theme_override_colors/font_pressed_color = Color(1, 0.85, 0.95, 1)
-theme_override_colors/font_hover_color = Color(0.878, 0.251, 0.984, 1)
-theme_override_colors/font_disabled_color = Color(0.35, 0.32, 0.4, 0.6)
-theme_override_font_sizes/font_size = 26
-theme_override_styles/normal = SubResource("StyleBoxEmpty_flat")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_flat")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_flat")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_flat")
-theme_override_styles/focus = SubResource("StyleBoxEmpty_flat")
-disabled = true
-text = "SPEEDRUN"
-alignment = 0
+[node name="Icon" type="TextureRect" parent="CanvasLayer/UI/MenuList/Continue" unique_id=1619711432]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("11_cont_idle")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Settings" type="Button" parent="CanvasLayer/UI/MenuList" unique_id=2142065743]
-custom_minimum_size = Vector2(320, 36)
+unique_name_in_owner = true
+custom_minimum_size = Vector2(234, 118)
 layout_mode = 2
+size_flags_horizontal = 0
 theme_override_colors/font_color = Color(0.5, 0.16, 0.58, 1)
 theme_override_colors/font_focus_color = Color(0.878, 0.251, 0.984, 1)
 theme_override_colors/font_pressed_color = Color(1, 0.85, 0.95, 1)
@@ -204,31 +156,25 @@ theme_override_styles/pressed = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_flat")
-text = "SETTINGS"
 alignment = 0
 
-[node name="Language" type="Button" parent="CanvasLayer/UI/MenuList" unique_id=444796026]
-custom_minimum_size = Vector2(320, 36)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.5, 0.16, 0.58, 1)
-theme_override_colors/font_focus_color = Color(0.878, 0.251, 0.984, 1)
-theme_override_colors/font_pressed_color = Color(1, 0.85, 0.95, 1)
-theme_override_colors/font_hover_color = Color(0.878, 0.251, 0.984, 1)
-theme_override_colors/font_disabled_color = Color(0.35, 0.32, 0.4, 0.6)
-theme_override_font_sizes/font_size = 26
-theme_override_styles/normal = SubResource("StyleBoxEmpty_flat")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_flat")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_flat")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_flat")
-theme_override_styles/focus = SubResource("StyleBoxEmpty_flat")
-disabled = true
-text = "LANGUAGE - ENGLISH"
-alignment = 0
+[node name="Icon" type="TextureRect" parent="CanvasLayer/UI/MenuList/Settings" unique_id=2108199803]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("13_set_idle")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Quit" type="Button" parent="CanvasLayer/UI/MenuList" unique_id=1546214458]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(320, 36)
+custom_minimum_size = Vector2(234, 118)
 layout_mode = 2
+size_flags_horizontal = 0
 theme_override_colors/font_color = Color(0.5, 0.16, 0.58, 1)
 theme_override_colors/font_focus_color = Color(0.878, 0.251, 0.984, 1)
 theme_override_colors/font_pressed_color = Color(1, 0.85, 0.95, 1)
@@ -239,8 +185,19 @@ theme_override_styles/pressed = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_flat")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_flat")
-text = "EXIT"
 alignment = 0
+
+[node name="Icon" type="TextureRect" parent="CanvasLayer/UI/MenuList/Quit" unique_id=1381669028]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("15_exit_idle")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="MenuCursor" type="Label" parent="CanvasLayer/UI" unique_id=43409408]
 layout_mode = 0

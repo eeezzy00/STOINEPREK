@@ -3,8 +3,9 @@
 [ext_resource type="Texture2D" uid="uid://bm72xm658xxfw" path="res://background/city 5/1.png" id="1_qrujo"]
 [ext_resource type="Texture2D" uid="uid://d5durqx504yw" path="res://Tiles.png" id="2_5lcx6"]
 [ext_resource type="PackedScene" uid="uid://dxcx53y53g05k" path="res://player.tscn" id="3_an40m"]
-[ext_resource type="PackedScene" path="res://samurai_npc.tscn" id="3_mu84n"]
+[ext_resource type="PackedScene" uid="uid://bli04ot8emnoh" path="res://samurai_npc.tscn" id="3_mu84n"]
 [ext_resource type="Script" uid="uid://br1j4tln534tq" path="res://level.gd" id="4_level_script"]
+[ext_resource type="Texture2D" uid="uid://shemnq6lpj1n" path="res://assets/MYASSETS/vospitan/VOSPITAN.png" id="6_mu84n"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_qrujo"]
 texture = ExtResource("2_5lcx6")
@@ -557,6 +558,49 @@ physics_layer_0/collision_layer = 4
 physics_layer_0/collision_mask = 0
 sources/0 = SubResource("TileSetAtlasSource_qrujo")
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_vosp_idle0"]
+atlas = ExtResource("6_mu84n")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vosp_idle1"]
+atlas = ExtResource("6_mu84n")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vosp_idle2"]
+atlas = ExtResource("6_mu84n")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vosp_idle3"]
+atlas = ExtResource("6_mu84n")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vosp_idle4"]
+atlas = ExtResource("6_mu84n")
+region = Rect2(256, 0, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_bmsap"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vosp_idle0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vosp_idle1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vosp_idle2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vosp_idle3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vosp_idle4")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 5.0
+}]
+
 [node name="Node2D" type="Node2D" unique_id=194157039]
 script = ExtResource("4_level_script")
 camera_limit_left = -190.0
@@ -589,3 +633,10 @@ scale = Vector2(2.4025, 2.4025)
 [node name="SamuraiNPC4" parent="." unique_id=438028811 instance=ExtResource("3_mu84n")]
 position = Vector2(447, 94)
 scale = Vector2(1.55, 1.55)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1597494113]
+position = Vector2(118.5, 606)
+scale = Vector2(1.046875, 1.1875)
+sprite_frames = SubResource("SpriteFrames_bmsap")
+animation = &"idle"
+autoplay = "idle"
